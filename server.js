@@ -553,6 +553,28 @@ const startServer = async () => {
       process.exit(1);
     }
 
+    // Check if database is empty and seed if necessary
+    try {
+      const users = await db.getUsers();
+      const tests = await db.getTests();
+      
+      if (users.length === 0 && tests.length === 0) {
+        console.log('🌱 Database is empty, seeding initial data...');
+        
+        // Import and run migration/seeding
+        const Migration = require('./migrate');
+        const migration = new Migration();
+        await migration.seedInitialData();
+        
+        console.log('✅ Initial data seeded successfully');
+      } else {
+        console.log(`📊 Database contains ${users.length} users and ${tests.length} tests`);
+      }
+    } catch (seedError) {
+      console.warn('⚠️  Warning: Could not seed initial data:', seedError.message);
+      console.log('📝 Continuing with empty database...');
+    }
+
     // Start server - Render will set PORT automatically
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Test Tracker Backend running on port ${PORT}`);
