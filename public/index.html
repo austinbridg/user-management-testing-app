@@ -1,0 +1,3614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User and Group Management Test Tracker v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-gear {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-gear:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .stats-bar {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            margin: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .pass { color: #28a745; }
+        .fail { color: #dc3545; }
+        .blocked { color: #ffc107; }
+        .partial { color: #17a2b8; }
+        .skip { color: #6c757d; }
+        .needs-review { color: #d63031; }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .test-grid {
+            padding: 30px;
+        }
+
+        .test-category {
+            margin-bottom: 40px;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .test-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .test-card {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .test-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .test-id {
+            font-weight: bold;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pass { background: #d4edda; color: #155724; }
+        .status-fail { background: #f8d7da; color: #721c24; }
+        .status-blocked { background: #fff3cd; color: #856404; }
+        .status-partial { background: #d1ecf1; color: #0c5460; }
+        .status-skip { background: #e2e3e5; color: #383d41; }
+        .status-pending { background: #f8f9fa; color: #6c757d; }
+        .status-needs-review { background: #ffeaa7; color: #d63031; }
+
+        .priority-badge {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .priority-high { 
+            background: #dc3545; 
+            color: white; 
+            border: 1px solid #dc3545;
+        }
+        
+        .priority-medium { 
+            background: #ffc107; 
+            color: #212529; 
+            border: 1px solid #ffc107;
+        }
+        
+        .priority-low { 
+            background: #28a745; 
+            color: white; 
+            border: 1px solid #28a745;
+        }
+
+        .test-badges {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .test-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .test-story {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .test-details {
+            margin-bottom: 15px;
+        }
+
+        .test-details h4 {
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .test-details ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .test-details li {
+            padding: 3px 0;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .test-steps {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .test-steps h4 {
+            color: #007bff;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .test-steps ol {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .test-steps li {
+            padding: 2px 0;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+
+        .acceptance-criteria {
+            background: #e8f5e8;
+            border-left: 4px solid #28a745;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .acceptance-criteria h4 {
+            color: #28a745;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .acceptance-criteria ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .acceptance-criteria li {
+            padding: 2px 0;
+            font-size: 0.85rem;
+            color: #155724;
+        }
+
+        .status-guidance {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .status-guidance h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .status-guidance p {
+            font-size: 0.85rem;
+            color: #856404;
+            margin: 0;
+        }
+
+        .user-results {
+            background: #f0f8ff;
+            border-left: 4px solid #17a2b8;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .user-results h4 {
+            color: #17a2b8;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .user-result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            font-size: 0.85rem;
+            color: #495057;
+        }
+
+        .user-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .test-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #ced4da;
+            color: #495057;
+        }
+
+        .btn-outline:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-gear {
+            padding: 8px 12px;
+            font-size: 1rem;
+            min-width: auto;
+            width: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-header h2 {
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .bug-report {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .bug-report h4 {
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+
+        .export-section {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+
+        .test-info-section {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .test-info-section h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .test-info-section p {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin: 5px 0;
+        }
+
+        .user-management {
+            background: #e8f4fd;
+            border-left: 4px solid #007bff;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .user-management h3 {
+            color: #007bff;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .user-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .user-form input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .current-user {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .current-user h4 {
+            color: #155724;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .user-stats {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .user-stats h4 {
+            color: #495057;
+            margin: 0 0 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .user-count {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .user-tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .user-tile {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .user-tile:hover {
+            border-color: #007bff;
+            background: #e8f4fd;
+        }
+
+        .user-tile.selected {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .user-tile .user-name {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .user-tile .user-stats {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .user-tile .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .user-tile:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .user-tile .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .results-page {
+            display: none;
+            padding: 30px;
+        }
+
+        .results-page.active {
+            display: block;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .results-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+        }
+
+        .results-filters {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .results-filters label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .results-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .results-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th {
+            background: #495057;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .test-id-cell {
+            font-weight: 600;
+            color: #007bff;
+        }
+
+        .test-title-cell {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .user-name-cell {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .status-cell {
+            text-align: center;
+        }
+
+        .date-cell {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .notes-cell {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .notes-cell:hover {
+            white-space: normal;
+            overflow: visible;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .results-summary {
+            background: #e8f4fd;
+            border-left: 4px solid #007bff;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .results-summary h3 {
+            color: #007bff;
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .summary-stats {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .summary-stat {
+            text-align: center;
+        }
+
+        .summary-stat .number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .summary-stat .label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .back-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #5a6268;
+        }
+
+        .user-management-toggle {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: background 0.3s ease;
+        }
+
+        .user-management-toggle:hover {
+            background: #0056b3;
+        }
+
+        .user-management-content {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .user-management-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+        }
+
+        .user-management-content.expanded {
+            max-height: 1000px;
+            opacity: 1;
+        }
+
+        .test-management-page {
+            display: none;
+            padding: 30px;
+        }
+
+        .test-management-page.active {
+            display: block;
+        }
+
+        .test-management-controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .test-management-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .test-management-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .test-management-table th {
+            background: #495057;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .test-management-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        .test-management-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .test-management-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .test-actions-cell {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .test-actions-cell .btn {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            min-width: auto;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+            border: 1px solid #ffc107;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+            border-color: #d39e00;
+        }
+
+        .test-details-cell {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .test-details-cell:hover {
+            white-space: normal;
+            overflow: visible;
+            max-width: none;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .settings-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .test-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filter-group {
+                justify-content: center;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>User and Group Management Test Tracker</h1>
+            <p>Comprehensive Testing for Critical Bug Identification</p>
+            <div class="version-badge">Version 2.0 - Enhanced Multi-User Support</div>
+            <button class="btn btn-outline btn-gear header-gear" onclick="showTestManagement()" title="Manage Tests">⚙️</button>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number pass" id="passCount">0</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number fail" id="failCount">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number blocked" id="blockedCount">0</div>
+                <div class="stat-label">Blocked</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number partial" id="partialCount">0</div>
+                <div class="stat-label">Partial</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number skip" id="skipCount">0</div>
+                <div class="stat-label">Skipped</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number needs-review" id="needsReviewCount">0</div>
+                <div class="stat-label">Needs Review</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="completedCount">0/30</div>
+                <div class="stat-label">Tests Complete</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+
+        <div class="controls">
+            <div class="filter-group">
+                <label for="statusFilter">Filter by Status:</label>
+                <select id="statusFilter">
+                    <option value="all">All Tests</option>
+                    <option value="pending">Pending</option>
+                    <option value="pass">Passed</option>
+                    <option value="fail">Failed</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="partial">Partial</option>
+                    <option value="skip">Skipped</option>
+                    <option value="needs-review">Needs Review</option>
+                </select>
+                
+                <label for="categoryFilter">Filter by Category:</label>
+                <select id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    <option value="system-admin">System Administrator</option>
+                    <option value="org-admin">Organization Administrator</option>
+                    <option value="org-member">Organization Member</option>
+                    <option value="hr-admin">HR Administrator</option>
+                    <option value="cross-role">Cross-Role</option>
+                    <option value="integration">Integration</option>
+                    <option value="performance">Performance</option>
+                    <option value="security">Security</option>
+                    <option value="adr-compliance">ADR Compliance</option>
+                </select>
+                
+                <label for="priorityFilter">Filter by Priority:</label>
+                <select id="priorityFilter">
+                    <option value="all">All Priorities</option>
+                    <option value="High">High Priority</option>
+                    <option value="Medium">Medium Priority</option>
+                    <option value="Low">Low Priority</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <button class="btn btn-primary" onclick="exportResults()">Export Results</button>
+                <button class="btn btn-success" onclick="resetAllTests()">Reset All Tests</button>
+                <button class="btn btn-info" onclick="showResultsPage()">View Test Results</button>
+            </div>
+        </div>
+
+        <div class="test-grid" id="testGrid">
+            <!-- Test cases will be dynamically generated here -->
+        </div>
+
+        <!-- Test Results Page -->
+        <div class="results-page" id="resultsPage">
+            <button class="back-button" onclick="hideResultsPage()">← Back to Test Overview</button>
+            <div class="results-header">
+                <h2>📊 Test Results Dashboard</h2>
+                <p>Detailed view of all test results by user</p>
+            </div>
+
+            <div class="results-summary" id="resultsSummary">
+                <h3>Summary Statistics</h3>
+                <div class="summary-stats" id="summaryStats">
+                    <!-- Summary stats will be populated here -->
+                </div>
+            </div>
+
+            <div class="results-filters">
+                <label for="resultsUserFilter">Filter by User:</label>
+                <select id="resultsUserFilter">
+                    <option value="all">All Users</option>
+                </select>
+                
+                <label for="resultsStatusFilter">Filter by Status:</label>
+                <select id="resultsStatusFilter">
+                    <option value="all">All Statuses</option>
+                    <option value="pass">Passed</option>
+                    <option value="fail">Failed</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="partial">Partial</option>
+                    <option value="skip">Skipped</option>
+                </select>
+                
+                <label for="resultsTestFilter">Filter by Test:</label>
+                <select id="resultsTestFilter">
+                    <option value="all">All Tests</option>
+                </select>
+                
+                <button class="btn btn-primary" onclick="exportResultsTable()">Export Table</button>
+                <button class="btn btn-outline" onclick="hideResultsPage()">Back to Tests</button>
+            </div>
+
+            <div class="results-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Test Title</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Environment</th>
+                            <th>Notes</th>
+                            <th>Bug Report</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="no-results" id="noResults" style="display: none;">
+                <h3>No Test Results Found</h3>
+                <p>No test results match the current filters. Try adjusting your filter criteria.</p>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="test-management-page" id="testManagementPage">
+            <button class="back-button" onclick="hideTestManagement()">← Back to Test Overview</button>
+            <div class="results-header">
+                <h2>⚙️ Settings</h2>
+                <p>Manage tests and user accounts</p>
+            </div>
+
+            <!-- User Management Section -->
+            <div class="settings-section">
+                <h3>👤 User Management</h3>
+                <div class="user-form">
+                    <input type="text" id="newUserName" placeholder="Enter your name to create a test user profile" maxlength="50">
+                    <button class="btn btn-primary" onclick="createUser()">Create User</button>
+                    <button class="btn btn-outline" onclick="resetUserData()" title="Reset all user data">Reset Users</button>
+                </div>
+                <div class="user-tiles" id="userTilesSettings">
+                    <!-- User tiles will be dynamically generated here -->
+                </div>
+            </div>
+
+            <!-- Test Management Section -->
+            <div class="settings-section">
+                <h3>🔧 Test Management</h3>
+                <div class="test-management-controls">
+                    <button class="btn btn-primary" onclick="openCreateTestModal()">+ Create New Test</button>
+                    <button class="btn btn-outline" onclick="exportTestDefinitions()">Export Test Definitions</button>
+                </div>
+
+                <div class="test-management-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Test ID</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Results</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="testManagementTableBody">
+                            <!-- Test management rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="export-section">
+            <h3>Export Options</h3>
+            <p>Export test results for sharing with development team</p>
+            <button class="btn btn-primary" onclick="exportToCSV()">Export to CSV</button>
+            <button class="btn btn-primary" onclick="exportToJSON()">Export to JSON</button>
+        </div>
+    </div>
+
+    <!-- Test Result Modal -->
+    <div id="testModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Test Result</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="testForm">
+                <div class="form-group">
+                    <label for="testStatus">Test Status:</label>
+                    <select id="testStatus" required>
+                        <option value="pending">Pending</option>
+                        <option value="pass">Pass</option>
+                        <option value="fail">Fail</option>
+                        <option value="blocked">Blocked</option>
+                        <option value="partial">Partial</option>
+                        <option value="skip">Skip</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testerName">Tester Name:</label>
+                    <select id="testerName" required>
+                        <option value="">Select a test user...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testDate">Test Date:</label>
+                    <input type="date" id="testDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="testNotes">Test Notes:</label>
+                    <textarea id="testNotes" placeholder="Add any notes about the test execution..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="environment">Environment:</label>
+                    <input type="text" id="environment" placeholder="e.g., Test Environment, Browser, OS">
+                </div>
+                
+                <div id="bugReportSection" class="bug-report" style="display: none;">
+                    <h4>Bug Report</h4>
+                    <div class="form-group">
+                        <label for="bugSeverity">Bug Severity:</label>
+                        <select id="bugSeverity">
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bugDescription">Bug Description:</label>
+                        <textarea id="bugDescription" placeholder="Describe the bug in detail..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="stepsToReproduce">Steps to Reproduce:</label>
+                        <textarea id="stepsToReproduce" placeholder="1. Step one&#10;2. Step two&#10;3. Step three"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expectedResult">Expected Result:</label>
+                        <textarea id="expectedResult" placeholder="What should have happened?"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="actualResult">Actual Result:</label>
+                        <textarea id="actualResult" placeholder="What actually happened?"></textarea>
+                    </div>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Result</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Test Management Modal -->
+    <div id="testManagementModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 id="testManagementModalTitle">Create New Test</h2>
+                <span class="close" onclick="closeTestManagementModal()">&times;</span>
+            </div>
+            
+            <form id="testManagementForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <div class="form-group">
+                            <label for="testId">Test ID:</label>
+                            <input type="text" id="testId" required placeholder="e.g., TC-001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testTitle">Test Title:</label>
+                            <input type="text" id="testTitle" required placeholder="Enter test title">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testStory">User Story:</label>
+                            <input type="text" id="testStory" required placeholder="e.g., US-001 - Description">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testCategory">Category:</label>
+                            <select id="testCategory" required>
+                                <option value="system-admin">System Administrator</option>
+                                <option value="org-admin">Organization Administrator</option>
+                                <option value="org-member">Organization Member</option>
+                                <option value="hr-admin">HR Administrator</option>
+                                <option value="cross-role">Cross-Role</option>
+                                <option value="integration">Integration</option>
+                                <option value="performance">Performance</option>
+                                <option value="security">Security</option>
+                                <option value="adr-compliance">ADR Compliance</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testPriority">Priority:</label>
+                            <select id="testPriority" required>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testEstimatedTime">Estimated Time:</label>
+                            <input type="text" id="testEstimatedTime" required placeholder="e.g., 15 minutes">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testPrerequisites">Prerequisites:</label>
+                            <textarea id="testPrerequisites" placeholder="Enter prerequisites"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="form-group">
+                            <label for="testSteps">Test Steps (one per line):</label>
+                            <textarea id="testSteps" rows="8" placeholder="1. Step one&#10;2. Step two&#10;3. Step three"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testAcceptanceCriteria">Acceptance Criteria (one per line):</label>
+                            <textarea id="testAcceptanceCriteria" rows="6" placeholder="• Criteria one&#10;• Criteria two&#10;• Criteria three"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="testStatusGuidance">Status Guidance:</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label for="passGuidance">Pass:</label>
+                                    <textarea id="passGuidance" rows="2" placeholder="When to mark as pass"></textarea>
+                                </div>
+                                <div>
+                                    <label for="failGuidance">Fail:</label>
+                                    <textarea id="failGuidance" rows="2" placeholder="When to mark as fail"></textarea>
+                                </div>
+                                <div>
+                                    <label for="blockedGuidance">Blocked:</label>
+                                    <textarea id="blockedGuidance" rows="2" placeholder="When to mark as blocked"></textarea>
+                                </div>
+                                <div>
+                                    <label for="partialGuidance">Partial:</label>
+                                    <textarea id="partialGuidance" rows="2" placeholder="When to mark as partial"></textarea>
+                                </div>
+                                <div>
+                                    <label for="skipGuidance">Skip:</label>
+                                    <textarea id="skipGuidance" rows="2" placeholder="When to mark as skip"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-outline" onclick="closeTestManagementModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced test data structure with detailed information
+        const testCases = [
+            // System Administrator Tests
+            {
+                id: 'TC-001',
+                title: 'Create Users Across Organizations',
+                story: 'US-001 - Create and manage users across all organizations',
+                category: 'system-admin',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'System Administrator access, Test organizations available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as System Administrator',
+                    'Navigate to User Management section',
+                    'Click "Create New User"',
+                    'Enter test user details (email, name, organization)',
+                    'Click "Save"',
+                    'Verify user is created successfully',
+                    'Repeat for different organization'
+                ],
+                acceptanceCriteria: [
+                    'User is created successfully',
+                    'User appears in user list',
+                    'User is associated with correct organization',
+                    'User is automatically added to "_All Users_" group',
+                    'User can be found by email search'
+                ],
+                statusGuidance: {
+                    pass: 'All acceptance criteria are met and user creation works across organizations',
+                    fail: 'Any acceptance criteria fails or user creation does not work',
+                    blocked: 'Cannot access user management or test organizations are unavailable',
+                    partial: 'User creation works but some acceptance criteria fail (e.g., missing "_All Users_" association)',
+                    skip: 'Test cannot be executed due to environment issues or missing prerequisites'
+                }
+            },
+            {
+                id: 'TC-002',
+                title: 'Manage System-Wide Configurations',
+                story: 'US-002 - Manage system-wide configurations and default roles',
+                category: 'system-admin',
+                priority: 'High',
+                estimatedTime: '10 minutes',
+                prerequisites: 'System Administrator access',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as System Administrator',
+                    'Navigate to System Configuration',
+                    'View default roles list',
+                    'Verify all 4 default roles exist',
+                    'Check that default roles cannot be edited',
+                    'Verify role permissions are pre-defined'
+                ],
+                acceptanceCriteria: [
+                    'All 4 default roles are visible',
+                    'Default roles cannot be edited',
+                    'Role permissions are correctly assigned',
+                    'System configuration is accessible'
+                ],
+                statusGuidance: {
+                    pass: 'All default roles exist and are properly configured',
+                    fail: 'Missing default roles or incorrect permissions',
+                    blocked: 'Cannot access system configuration',
+                    partial: 'Some default roles missing or configuration issues',
+                    skip: 'System configuration not available or access denied'
+                }
+            },
+            // Organization Administrator Tests
+            {
+                id: 'TC-003',
+                title: 'Create and Manage Users Within Organization',
+                story: 'US-006 - Create and manage users within my organization',
+                category: 'org-admin',
+                priority: 'High',
+                estimatedTime: '20 minutes',
+                prerequisites: 'Organization Administrator access, Test organization available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to User Management',
+                    'Click "Add User to Organization"',
+                    'Enter user details (email, name)',
+                    'Click "Add User"',
+                    'Verify user is added to organization',
+                    'Edit user details and save changes',
+                    'Verify changes are saved'
+                ],
+                acceptanceCriteria: [
+                    'User can be added to organization',
+                    'User details can be edited',
+                    'Changes are saved successfully',
+                    'User appears in organization user list',
+                    'Cannot add users to other organizations'
+                ],
+                statusGuidance: {
+                    pass: 'All user management operations work correctly within organization scope',
+                    fail: 'User addition/editing fails or works outside organization scope',
+                    blocked: 'Cannot access user management or organization not available',
+                    partial: 'Some operations work but others fail (e.g., edit works but add fails)',
+                    skip: 'Organization Administrator access not available or test data missing'
+                }
+            },
+            {
+                id: 'TC-004',
+                title: 'Create and Manage User Groups',
+                story: 'US-007 - Create and manage user groups',
+                category: 'org-admin',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'Organization Administrator access',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to Group Management',
+                    'Click "Create New Group"',
+                    'Enter group details (name, description)',
+                    'Click "Save"',
+                    'Verify group is created',
+                    'Edit group details',
+                    'Save changes and verify group appears in list'
+                ],
+                acceptanceCriteria: [
+                    'Group can be created successfully',
+                    'Group details can be edited',
+                    'Group appears in group list',
+                    'Group name and description are correct',
+                    'Multiple groups can be created'
+                ],
+                statusGuidance: {
+                    pass: 'All group management operations work correctly',
+                    fail: 'Group creation/editing fails or data not saved',
+                    blocked: 'Cannot access group management',
+                    partial: 'Group creation works but editing fails',
+                    skip: 'Group management not available or access denied'
+                }
+            },
+            {
+                id: 'TC-005',
+                title: 'Define Hierarchy Access Rules',
+                story: 'US-008 - Define hierarchy access rules for different groups',
+                category: 'org-admin',
+                priority: 'High',
+                estimatedTime: '25 minutes',
+                prerequisites: 'Organization Administrator access, Test groups and hierarchies available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to Group Management',
+                    'Select a test group',
+                    'Click "Add Hierarchy Access Rule"',
+                    'Configure access rule (hierarchy name, path, permission)',
+                    'Click "Save"',
+                    'Add another rule with different permission',
+                    'Save second rule and verify both rules are saved'
+                ],
+                acceptanceCriteria: [
+                    'Hierarchy access rules can be created',
+                    'Multiple rules can be added to same group',
+                    'Grant and Deny permissions work',
+                    'Rules are saved correctly',
+                    'Rules can be edited or deleted'
+                ],
+                statusGuidance: {
+                    pass: 'All hierarchy access rule operations work correctly',
+                    fail: 'Rule creation fails or permissions not applied correctly',
+                    blocked: 'Cannot access hierarchy management or test data unavailable',
+                    partial: 'Basic rules work but complex scenarios fail',
+                    skip: 'Hierarchy management not available or test hierarchies missing'
+                }
+            },
+            {
+                id: 'TC-006',
+                title: 'Create Custom Roles',
+                story: 'US-009 - Create custom roles for specific job functions',
+                category: 'org-admin',
+                priority: 'Medium',
+                estimatedTime: '20 minutes',
+                prerequisites: 'Organization Administrator access',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to Role Management',
+                    'Click "Create Custom Role"',
+                    'Enter role details (name, description)',
+                    'Assign permissions to the role',
+                    'Click "Save"',
+                    'Verify role is created',
+                    'Edit role permissions and save changes'
+                ],
+                acceptanceCriteria: [
+                    'Custom role can be created',
+                    'Permissions can be assigned',
+                    'Role appears in role list',
+                    'Role permissions can be edited',
+                    'Role is organization-specific'
+                ],
+                statusGuidance: {
+                    pass: 'Custom role creation and management works correctly',
+                    fail: 'Role creation fails or permissions not assigned correctly',
+                    blocked: 'Cannot access role management',
+                    partial: 'Role creation works but permission assignment fails',
+                    skip: 'Role management not available or custom roles disabled'
+                }
+            },
+            {
+                id: 'TC-007',
+                title: 'Assign Users to Multiple Groups',
+                story: 'US-010 - Assign users to multiple groups',
+                category: 'org-admin',
+                priority: 'Medium',
+                estimatedTime: '15 minutes',
+                prerequisites: 'Organization Administrator access, Test users and groups available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to User Management',
+                    'Select a test user',
+                    'Click "Manage Group Memberships"',
+                    'Add user to first group',
+                    'Add user to second group',
+                    'Save memberships',
+                    'Verify user is in both groups',
+                    'Remove user from one group',
+                    'Save changes and verify user is only in remaining group'
+                ],
+                acceptanceCriteria: [
+                    'User can be added to multiple groups',
+                    'User can be removed from groups',
+                    'Group memberships are saved correctly',
+                    'User\'s group list updates correctly',
+                    'Multiple group operations work'
+                ],
+                statusGuidance: {
+                    pass: 'All group membership operations work correctly',
+                    fail: 'Group assignment/removal fails or not saved',
+                    blocked: 'Cannot access group membership management',
+                    partial: 'Adding works but removing fails, or vice versa',
+                    skip: 'Group membership management not available or test data missing'
+                }
+            },
+            {
+                id: 'TC-008',
+                title: 'Deactivate Users',
+                story: 'US-011 - Deactivate users who leave the organization',
+                category: 'org-admin',
+                priority: 'High',
+                estimatedTime: '10 minutes',
+                prerequisites: 'Organization Administrator access, Test users available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to User Management',
+                    'Select a test user',
+                    'Click "Deactivate User"',
+                    'Confirm deactivation',
+                    'Verify user status changes to "Inactive"',
+                    'Verify user cannot log in',
+                    'Reactivate user',
+                    'Verify user status changes to "Active"'
+                ],
+                acceptanceCriteria: [
+                    'User can be deactivated',
+                    'User status changes correctly',
+                    'Deactivated user cannot access system',
+                    'User can be reactivated',
+                    'Status changes are saved'
+                ],
+                statusGuidance: {
+                    pass: 'All user activation/deactivation operations work correctly',
+                    fail: 'Deactivation fails or user still has access',
+                    blocked: 'Cannot access user management or test users unavailable',
+                    partial: 'Deactivation works but reactivation fails',
+                    skip: 'User management not available or deactivation feature disabled'
+                }
+            },
+            // Organization Member Tests
+            {
+                id: 'TC-009',
+                title: 'View Group Memberships and Roles',
+                story: 'US-012 - See which groups I belong to and what roles I have',
+                category: 'org-member',
+                priority: 'Medium',
+                estimatedTime: '10 minutes',
+                prerequisites: 'Organization Member access, User assigned to groups and roles',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Member',
+                    'Navigate to "My Profile" or "My Access"',
+                    'View "Group Memberships" section',
+                    'Verify all assigned groups are listed',
+                    'View "Role Assignments" section',
+                    'Verify all assigned roles are listed',
+                    'Check that permissions are visible',
+                    'Verify organization context is shown'
+                ],
+                acceptanceCriteria: [
+                    'Group memberships are visible',
+                    'Role assignments are visible',
+                    'Permissions are displayed',
+                    'Organization context is shown',
+                    'Information is accurate and current'
+                ],
+                statusGuidance: {
+                    pass: 'All user profile information displays correctly',
+                    fail: 'Missing group/role information or incorrect data displayed',
+                    blocked: 'Cannot access profile or user not assigned to any groups/roles',
+                    partial: 'Some information displays but other sections missing',
+                    skip: 'Profile management not available or user has no group/role assignments'
+                }
+            },
+            {
+                id: 'TC-010',
+                title: 'Switch Between Organizations',
+                story: 'US-013 - Switch between organizations I\'m associated with',
+                category: 'org-member',
+                priority: 'Medium',
+                estimatedTime: '10 minutes',
+                prerequisites: 'User associated with multiple organizations',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as user associated with multiple organizations',
+                    'Look for organization selector/switcher',
+                    'Click on current organization name',
+                    'Select different organization from dropdown',
+                    'Verify context switches to new organization',
+                    'Verify user\'s groups and roles update',
+                    'Switch back to original organization',
+                    'Verify context switches back correctly'
+                ],
+                acceptanceCriteria: [
+                    'Organization switcher is visible',
+                    'Can switch between organizations',
+                    'Context updates correctly',
+                    'Groups and roles update per organization',
+                    'Switching works in both directions'
+                ],
+                statusGuidance: {
+                    pass: 'Organization switching works correctly and context updates properly',
+                    fail: 'Switching fails or context does not update correctly',
+                    blocked: 'User not associated with multiple organizations or switcher not available',
+                    partial: 'Switching works but context does not update properly',
+                    skip: 'Multi-organization support not available or user only in one organization'
+                }
+            },
+            // HR Administrator Tests
+            {
+                id: 'TC-011',
+                title: 'Create User Accounts for New Employees',
+                story: 'US-014 - Create user accounts for new employees',
+                category: 'hr-admin',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'HR Administrator access, Employee data available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as HR Administrator',
+                    'Navigate to User Management',
+                    'Click "Add New Employee"',
+                    'Enter employee details (email, name, department, start date)',
+                    'Assign to appropriate groups',
+                    'Assign appropriate roles',
+                    'Click "Create Account"',
+                    'Verify account is created successfully'
+                ],
+                acceptanceCriteria: [
+                    'Employee account can be created',
+                    'Employee details are saved correctly',
+                    'Group assignments work',
+                    'Role assignments work',
+                    'Account is active and ready to use'
+                ],
+                statusGuidance: {
+                    pass: 'All employee account creation operations work correctly',
+                    fail: 'Account creation fails or assignments not applied',
+                    blocked: 'Cannot access HR management or employee data unavailable',
+                    partial: 'Account creation works but group/role assignments fail',
+                    skip: 'HR management not available or employee onboarding feature disabled'
+                }
+            },
+            {
+                id: 'TC-012',
+                title: 'Update Group Memberships for Role Changes',
+                story: 'US-015 - Update user group memberships when employees change departments',
+                category: 'hr-admin',
+                priority: 'Medium',
+                estimatedTime: '15 minutes',
+                prerequisites: 'HR Administrator access, Existing users and groups available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as HR Administrator',
+                    'Navigate to User Management',
+                    'Select an existing user',
+                    'Click "Update Department"',
+                    'Change department from current to new department',
+                    'Update group memberships (remove from old, add to new)',
+                    'Update role assignments if needed',
+                    'Save changes',
+                    'Verify changes are applied'
+                ],
+                acceptanceCriteria: [
+                    'Department can be changed',
+                    'Group memberships can be updated',
+                    'Role assignments can be updated',
+                    'Changes are saved correctly',
+                    'User\'s access updates appropriately'
+                ],
+                statusGuidance: {
+                    pass: 'All department change and access update operations work correctly',
+                    fail: 'Department change fails or access not updated properly',
+                    blocked: 'Cannot access HR management or user/group data unavailable',
+                    partial: 'Department change works but group/role updates fail',
+                    skip: 'HR management not available or department change feature disabled'
+                }
+            },
+            {
+                id: 'TC-013',
+                title: 'Deactivate User Accounts for Departing Employees',
+                story: 'US-016 - Deactivate user accounts for departing employees',
+                category: 'hr-admin',
+                priority: 'High',
+                estimatedTime: '10 minutes',
+                prerequisites: 'HR Administrator access, Test users available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as HR Administrator',
+                    'Navigate to User Management',
+                    'Select a test user',
+                    'Click "Process Departure"',
+                    'Enter departure date',
+                    'Select reason for departure',
+                    'Confirm deactivation',
+                    'Verify user account is deactivated',
+                    'Verify user cannot access system'
+                ],
+                acceptanceCriteria: [
+                    'Departure process can be initiated',
+                    'Departure details can be entered',
+                    'User account is deactivated',
+                    'User access is revoked',
+                    'Process is completed successfully'
+                ],
+                statusGuidance: {
+                    pass: 'All employee departure processing operations work correctly',
+                    fail: 'Departure process fails or user still has access',
+                    blocked: 'Cannot access HR management or departure processing unavailable',
+                    partial: 'Departure process works but access not properly revoked',
+                    skip: 'HR management not available or departure processing feature disabled'
+                }
+            },
+            // Cross-Role Tests
+            {
+                id: 'TC-014',
+                title: 'View Current Group Memberships and Role Assignments',
+                story: 'US-017 - See my current group memberships and role assignments',
+                category: 'cross-role',
+                priority: 'Medium',
+                estimatedTime: '10 minutes',
+                prerequisites: 'Any user type with group and role assignments',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as any user type',
+                    'Navigate to profile or access management section',
+                    'View "My Groups" section',
+                    'Verify all group memberships are listed',
+                    'View "My Roles" section',
+                    'Verify all role assignments are listed',
+                    'Check that information is current and accurate',
+                    'Verify permissions are visible'
+                ],
+                acceptanceCriteria: [
+                    'Group memberships are visible',
+                    'Role assignments are visible',
+                    'Information is current and accurate',
+                    'Permissions are displayed',
+                    'UI is clear and understandable'
+                ],
+                statusGuidance: {
+                    pass: 'All profile information displays correctly for any user type',
+                    fail: 'Missing or incorrect group/role information displayed',
+                    blocked: 'Cannot access profile or user has no group/role assignments',
+                    partial: 'Some information displays but other sections missing or incorrect',
+                    skip: 'Profile management not available or user has no assignments'
+                }
+            },
+            {
+                id: 'TC-015',
+                title: 'System Remembers Organization Context',
+                story: 'US-018 - System remembers my organization context',
+                category: 'cross-role',
+                priority: 'Medium',
+                estimatedTime: '10 minutes',
+                prerequisites: 'User associated with multiple organizations',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as user associated with multiple organizations',
+                    'Switch to specific organization',
+                    'Navigate to different sections of the application',
+                    'Verify organization context is maintained',
+                    'Log out and log back in',
+                    'Verify organization context is remembered',
+                    'Switch organizations and verify context persists'
+                ],
+                acceptanceCriteria: [
+                    'Organization context is maintained during session',
+                    'Context persists after logout/login',
+                    'Context is maintained across different sections',
+                    'Context switching works correctly',
+                    'Context is displayed consistently'
+                ],
+                statusGuidance: {
+                    pass: 'Organization context persistence works correctly across all scenarios',
+                    fail: 'Context is lost or not maintained properly',
+                    blocked: 'User not associated with multiple organizations or context feature unavailable',
+                    partial: 'Context works in some scenarios but fails in others',
+                    skip: 'Multi-organization support not available or context persistence disabled'
+                }
+            },
+            // Integration Tests
+            {
+                id: 'TC-016',
+                title: 'End-to-End User Lifecycle',
+                story: 'Integration Test - Complete user lifecycle from creation to deactivation',
+                category: 'integration',
+                priority: 'High',
+                estimatedTime: '30 minutes',
+                prerequisites: 'System Administrator and Organization Administrator access, Test data available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Create new user account',
+                    'Assign user to multiple groups',
+                    'Assign appropriate roles',
+                    'Verify user can access appropriate resources',
+                    'Modify group memberships',
+                    'Modify role assignments',
+                    'Verify access changes appropriately',
+                    'Deactivate user account',
+                    'Verify access is revoked'
+                ],
+                acceptanceCriteria: [
+                    'Complete lifecycle works end-to-end',
+                    'All steps complete successfully',
+                    'Access changes appropriately',
+                    'Deactivation works correctly',
+                    'No errors occur during process'
+                ],
+                statusGuidance: {
+                    pass: 'Complete user lifecycle works without any issues',
+                    fail: 'Any step in the lifecycle fails or access not managed correctly',
+                    blocked: 'Cannot access required management functions or test data unavailable',
+                    partial: 'Most lifecycle steps work but some fail',
+                    skip: 'Required access levels not available or lifecycle management disabled'
+                }
+            },
+            {
+                id: 'TC-017',
+                title: 'Hierarchy Access Control Validation',
+                story: 'Integration Test - Hierarchy access control rules work correctly',
+                category: 'integration',
+                priority: 'High',
+                estimatedTime: '25 minutes',
+                prerequisites: 'Organization Administrator access, Test hierarchies and groups available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Create test group with hierarchy access rules',
+                    'Add user to group',
+                    'Test access to different hierarchy paths',
+                    'Verify grant rules work',
+                    'Verify deny rules work',
+                    'Test wildcard rules',
+                    'Test multiple rules on same group',
+                    'Verify access changes when group membership changes'
+                ],
+                acceptanceCriteria: [
+                    'Hierarchy access rules work correctly',
+                    'Grant rules provide access',
+                    'Deny rules block access',
+                    'Wildcard rules work',
+                    'Multiple rules work together',
+                    'Group membership changes affect access'
+                ],
+                statusGuidance: {
+                    pass: 'All hierarchy access control scenarios work correctly',
+                    fail: 'Access rules not applied correctly or access control fails',
+                    blocked: 'Cannot access hierarchy management or test hierarchies unavailable',
+                    partial: 'Basic access control works but complex scenarios fail',
+                    skip: 'Hierarchy access control not available or test data missing'
+                }
+            },
+            // Performance Tests
+            {
+                id: 'TC-018',
+                title: 'Large Organization Performance',
+                story: 'Performance Test - System performance with large numbers of users and groups',
+                category: 'performance',
+                priority: 'Medium',
+                estimatedTime: '20 minutes',
+                prerequisites: 'Test environment with ability to create large datasets',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Create organization with 100+ users',
+                    'Create 20+ groups',
+                    'Assign users to multiple groups',
+                    'Test user creation performance',
+                    'Test group management performance',
+                    'Test user search performance',
+                    'Test group membership updates',
+                    'Verify system remains responsive'
+                ],
+                acceptanceCriteria: [
+                    'System handles large numbers of users',
+                    'Group management remains responsive',
+                    'Search functions work efficiently',
+                    'Updates complete in reasonable time',
+                    'No performance degradation'
+                ],
+                statusGuidance: {
+                    pass: 'System performs well with large datasets and remains responsive',
+                    fail: 'Performance degrades significantly or operations timeout',
+                    blocked: 'Cannot create large test datasets or performance testing not feasible',
+                    partial: 'Some operations perform well but others show degradation',
+                    skip: 'Performance testing not available or test environment limitations'
+                }
+            },
+            // Security Tests
+            {
+                id: 'TC-019',
+                title: 'Access Control Validation',
+                story: 'Security Test - Users can only access what they\'re authorized to access',
+                category: 'security',
+                priority: 'High',
+                estimatedTime: '20 minutes',
+                prerequisites: 'Multiple user types with different access levels, Test resources',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Create user with limited access',
+                    'Attempt to access unauthorized resources',
+                    'Verify access is denied',
+                    'Create user with broader access',
+                    'Verify access is granted appropriately',
+                    'Test cross-organization access restrictions',
+                    'Verify role-based access works',
+                    'Test group-based access restrictions'
+                ],
+                acceptanceCriteria: [
+                    'Unauthorized access is blocked',
+                    'Authorized access is granted',
+                    'Cross-organization restrictions work',
+                    'Role-based access works',
+                    'Group-based access works',
+                    'Security is maintained'
+                ],
+                statusGuidance: {
+                    pass: 'All security controls work correctly and unauthorized access is properly blocked',
+                    fail: 'Security controls fail or unauthorized access is allowed',
+                    blocked: 'Cannot test security controls or test users/resources unavailable',
+                    partial: 'Some security controls work but others fail',
+                    skip: 'Security testing not available or test environment limitations'
+                }
+            },
+            // ADR Compliance Tests
+            {
+                id: 'TC-020',
+                title: 'Wildcard Hierarchy Access Testing',
+                story: 'ADR Compliance - Test wildcard (*) hierarchy access as defined in ADR',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'Organization Administrator access, Test hierarchies available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to Group Management',
+                    'Select a test group',
+                    'Add hierarchy access rule with wildcard hierarchy (*)',
+                    'Set path to wildcard (*) as required',
+                    'Set permission to GRANT',
+                    'Save rule',
+                    'Test with user in group to verify access to all hierarchies'
+                ],
+                acceptanceCriteria: [
+                    'Wildcard hierarchy name (*) is accepted',
+                    'When hierarchy is *, path must also be *',
+                    'Wildcard rules provide access to all hierarchies',
+                    'Rule validation works correctly'
+                ],
+                statusGuidance: {
+                    pass: 'Wildcard hierarchy access works correctly per ADR specification',
+                    fail: 'Wildcard rules not accepted or validation fails',
+                    blocked: 'Cannot access hierarchy management or wildcard support unavailable',
+                    partial: 'Wildcard rules accepted but access not applied correctly',
+                    skip: 'Wildcard hierarchy access not implemented or test hierarchies unavailable'
+                }
+            },
+            {
+                id: 'TC-021',
+                title: 'Complex Path Hierarchy Access',
+                story: 'ADR Compliance - Test multi-level hierarchy paths as defined in ADR',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '20 minutes',
+                prerequisites: 'Organization Administrator access, Complex test hierarchies available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Create hierarchy access rule with complex path',
+                    'Set hierarchy name to specific hierarchy',
+                    'Set path to multi-level path (e.g., /Division/Marketing/Site/Floor)',
+                    'Set permission to GRANT',
+                    'Save rule',
+                    'Test that user gets access to entire subgraph from final node',
+                    'Test with different path levels to verify subgraph access'
+                ],
+                acceptanceCriteria: [
+                    'Multi-level paths are accepted',
+                    'Access applies to entire subgraph from final node',
+                    'Path validation works correctly',
+                    'Subgraph access is properly implemented'
+                ],
+                statusGuidance: {
+                    pass: 'Complex path hierarchy access works correctly per ADR specification',
+                    fail: 'Multi-level paths not accepted or subgraph access not implemented',
+                    blocked: 'Cannot access hierarchy management or complex hierarchies unavailable',
+                    partial: 'Basic paths work but complex paths fail',
+                    skip: 'Complex path support not implemented or test hierarchies insufficient'
+                }
+            },
+            {
+                id: 'TC-022',
+                title: 'Grant/Deny Combination Testing',
+                story: 'ADR Compliance - Test grant at top level with denial at lower level for pruning',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '20 minutes',
+                prerequisites: 'Organization Administrator access, Test hierarchies and groups available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Create group with two hierarchy access rules',
+                    'Add first rule: Hierarchy "Core", Path "/Division", Permission "GRANT"',
+                    'Add second rule: Hierarchy "Core", Path "/Division/Finance", Permission "DENY"',
+                    'Save both rules',
+                    'Add user to group',
+                    'Test user access to Division level (should have access)',
+                    'Test user access to Finance subgraph (should be denied)',
+                    'Test user access to other Division subgraphs (should have access)'
+                ],
+                acceptanceCriteria: [
+                    'Multiple rules can be applied to same group',
+                    'Grant rules provide access',
+                    'Deny rules block access',
+                    'Combination logic works correctly',
+                    'Pruning functionality works as expected'
+                ],
+                statusGuidance: {
+                    pass: 'Grant/deny combination logic works correctly per ADR specification',
+                    fail: 'Rule combinations not applied correctly or pruning fails',
+                    blocked: 'Cannot access hierarchy management or rule combination support unavailable',
+                    partial: 'Basic rules work but combinations fail',
+                    skip: 'Rule combination support not implemented or test hierarchies unavailable'
+                }
+            },
+            {
+                id: 'TC-023',
+                title: 'Role Assignment to Groups (Not Users)',
+                story: 'ADR Compliance - Verify roles are assigned to groups, not individual users',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'Organization Administrator access, Test groups and roles available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to Role Management',
+                    'Create custom role "Marketing Specialist"',
+                    'Navigate to Group Management',
+                    'Select a group',
+                    'Assign "Marketing Specialist" role to the group',
+                    'Verify role is assigned to group, not individual users',
+                    'Add user to group',
+                    'Verify user inherits role through group membership',
+                    'Remove user from group',
+                    'Verify user loses role access'
+                ],
+                acceptanceCriteria: [
+                    'Roles can only be assigned to groups',
+                    'Users inherit roles through group membership',
+                    'Role access is removed when user leaves group',
+                    'Role assignment follows ADR requirements'
+                ],
+                statusGuidance: {
+                    pass: 'Role assignment to groups works correctly per ADR specification',
+                    fail: 'Roles can be assigned to individual users or inheritance fails',
+                    blocked: 'Cannot access role/group management or role assignment feature unavailable',
+                    partial: 'Group role assignment works but user inheritance fails',
+                    skip: 'Role assignment feature not available or ADR compliance not implemented'
+                }
+            },
+            {
+                id: 'TC-024',
+                title: '"_All Users_" Node Association',
+                story: 'ADR Compliance - Verify all users are automatically associated with "_All Users_" node',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '10 minutes',
+                prerequisites: 'System Administrator access',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as System Administrator',
+                    'Create new user via API or UI',
+                    'Verify user is automatically added to "_All Users_" group',
+                    'Check user\'s group memberships',
+                    'Verify "_All Users_" group exists and is accessible',
+                    'Test with multiple users to ensure consistent behavior'
+                ],
+                acceptanceCriteria: [
+                    'All users are automatically associated with "_All Users_" group',
+                    '"_All Users_" group exists in system',
+                    'Association happens automatically on user creation',
+                    'Association is consistent across all users'
+                ],
+                statusGuidance: {
+                    pass: '"_All Users_" node association works correctly per ADR specification',
+                    fail: 'Users not automatically associated with "_All Users_" group',
+                    blocked: 'Cannot create users or "_All Users_" group not implemented',
+                    partial: 'Some users associated but not all or association inconsistent',
+                    skip: '"_All Users_" node feature not implemented or user creation unavailable'
+                }
+            },
+            {
+                id: 'TC-025',
+                title: 'Application-Defined Permissions',
+                story: 'ADR Compliance - Verify permissions are defined by applications and not editable by users',
+                category: 'adr-compliance',
+                priority: 'Medium',
+                estimatedTime: '15 minutes',
+                prerequisites: 'Organization Administrator access',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as Organization Administrator',
+                    'Navigate to Role Management',
+                    'Create custom role',
+                    'Attempt to edit available permissions list',
+                    'Verify permission list cannot be modified',
+                    'Verify permissions are pre-defined by applications',
+                    'Test permission assignment to roles',
+                    'Verify permission names and descriptions are application-defined'
+                ],
+                acceptanceCriteria: [
+                    'Permission list cannot be edited by users',
+                    'Permissions are pre-defined by applications',
+                    'Permission assignment to roles works',
+                    'Permission definitions are application-controlled'
+                ],
+                statusGuidance: {
+                    pass: 'Permission management works correctly per ADR specification',
+                    fail: 'Users can edit permission list or permissions not application-defined',
+                    blocked: 'Cannot access role management or permission system unavailable',
+                    partial: 'Permission assignment works but list can be edited',
+                    skip: 'Permission management not available or application-defined permissions not implemented'
+                }
+            },
+            {
+                id: 'TC-026',
+                title: 'Token Organization Context',
+                story: 'ADR Compliance - Verify Vertex tokens contain organization context as specified in ADR',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'User associated with multiple organizations, Token inspection capability',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as user associated with multiple organizations',
+                    'Switch to specific organization',
+                    'Generate or refresh Vertex token',
+                    'Decode/inspect token contents',
+                    'Verify token contains current organization context',
+                    'Switch to different organization',
+                    'Verify token context updates',
+                    'Test token-based API calls to verify organization context'
+                ],
+                acceptanceCriteria: [
+                    'Token contains organization context',
+                    'Context updates when organization changes',
+                    'Token-based API calls use correct organization context',
+                    'Token validation works correctly'
+                ],
+                statusGuidance: {
+                    pass: 'Token organization context works correctly per ADR specification',
+                    fail: 'Token does not contain organization context or context not updated',
+                    blocked: 'Cannot inspect tokens or multi-organization support unavailable',
+                    partial: 'Token contains context but updates fail',
+                    skip: 'Token inspection not available or organization context not implemented'
+                }
+            },
+            {
+                id: 'TC-027',
+                title: 'API Endpoint Functionality',
+                story: 'ADR Compliance - Test Sustainability Graph API endpoints as specified in PRD',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '25 minutes',
+                prerequisites: 'API access credentials, API testing tools available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Test User Management APIs (POST, GET, PUT, DELETE /api/users)',
+                    'Test Group Management APIs (POST, GET, PUT, DELETE /api/groups)',
+                    'Test Access Control APIs (POST, GET, PUT, DELETE /api/groups/{groupId}/hierarchy-access)',
+                    'Test Role Management APIs (POST, GET /api/roles)',
+                    'Verify all APIs return appropriate responses',
+                    'Test API error handling',
+                    'Verify API documentation matches implementation'
+                ],
+                acceptanceCriteria: [
+                    'All API endpoints are functional',
+                    'APIs return correct HTTP status codes',
+                    'API responses contain expected data',
+                    'API error handling works correctly',
+                    'API documentation matches implementation'
+                ],
+                statusGuidance: {
+                    pass: 'All API endpoints work correctly per PRD specification',
+                    fail: 'API endpoints fail or return incorrect responses',
+                    blocked: 'Cannot access APIs or API testing tools unavailable',
+                    partial: 'Some API endpoints work but others fail',
+                    skip: 'API access not available or API testing not feasible'
+                }
+            },
+            {
+                id: 'TC-028',
+                title: 'Default Role Permissions Validation',
+                story: 'ADR Compliance - Verify default roles have correct pre-defined permissions',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'System Administrator access',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as System Administrator',
+                    'Navigate to Role Management',
+                    'View each default role (System Admin, Org Admin, Org Manager, Org Member)',
+                    'Verify each role has appropriate permissions',
+                    'Attempt to edit default role permissions',
+                    'Verify default roles cannot be edited',
+                    'Test role functionality with users in each role'
+                ],
+                acceptanceCriteria: [
+                    'All 4 default roles exist',
+                    'Each role has appropriate permissions',
+                    'Default roles cannot be edited',
+                    'Role permissions work correctly',
+                    'Role hierarchy is properly implemented'
+                ],
+                statusGuidance: {
+                    pass: 'Default roles are correctly configured per ADR specification',
+                    fail: 'Default roles missing, incorrect permissions, or can be edited',
+                    blocked: 'Cannot access role management or default roles not implemented',
+                    partial: 'Some default roles correct but others have issues',
+                    skip: 'Role management not available or default roles not implemented'
+                }
+            },
+            {
+                id: 'TC-029',
+                title: 'Group Membership Authorization',
+                story: 'ADR Compliance - Verify group membership is used for authorization decisions',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '20 minutes',
+                prerequisites: 'Test users and groups available, Protected resources for testing',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Create user with no group memberships',
+                    'Attempt to access protected resources',
+                    'Verify access is denied',
+                    'Add user to group with appropriate permissions',
+                    'Attempt to access same resources',
+                    'Verify access is granted',
+                    'Remove user from group',
+                    'Attempt to access resources again',
+                    'Verify access is denied'
+                ],
+                acceptanceCriteria: [
+                    'Users without group memberships are denied access',
+                    'Group membership grants appropriate access',
+                    'Removing group membership revokes access',
+                    'Authorization decisions are based on group membership',
+                    'Access control works correctly'
+                ],
+                statusGuidance: {
+                    pass: 'Group-based authorization works correctly per ADR specification',
+                    fail: 'Authorization not based on group membership or access control fails',
+                    blocked: 'Cannot test authorization or protected resources unavailable',
+                    partial: 'Basic authorization works but group membership changes not reflected',
+                    skip: 'Authorization testing not available or group-based access control not implemented'
+                }
+            },
+            {
+                id: 'TC-030',
+                title: 'Cross-Organization User Association',
+                story: 'ADR Compliance - Test users can be associated with multiple organizations',
+                category: 'adr-compliance',
+                priority: 'High',
+                estimatedTime: '15 minutes',
+                prerequisites: 'System Administrator access, Multiple test organizations available',
+                userResults: [],
+                consolidatedStatus: 'pending',
+                testSteps: [
+                    'Log in as System Administrator',
+                    'Create user',
+                    'Associate user with Organization A',
+                    'Associate same user with Organization B',
+                    'Verify user appears in both organizations',
+                    'Test user can switch between organizations',
+                    'Verify user\'s groups and roles are organization-specific',
+                    'Test user access in each organization context'
+                ],
+                acceptanceCriteria: [
+                    'User can be associated with multiple organizations',
+                    'User appears in both organization user lists',
+                    'User can switch between organizations',
+                    'Groups and roles are organization-specific',
+                    'Access is properly scoped per organization'
+                ],
+                statusGuidance: {
+                    pass: 'Cross-organization user association works correctly per ADR specification',
+                    fail: 'Users cannot be associated with multiple organizations or scoping fails',
+                    blocked: 'Cannot access user management or multiple organizations unavailable',
+                    partial: 'User association works but organization scoping fails',
+                    skip: 'Multi-organization support not available or cross-organization association not implemented'
+                }
+            }
+        ];
+
+        const categoryNames = {
+            'system-admin': 'System Administrator Tests',
+            'org-admin': 'Organization Administrator Tests',
+            'org-member': 'Organization Member Tests',
+            'hr-admin': 'HR Administrator Tests',
+            'cross-role': 'Cross-Role Tests',
+            'integration': 'Integration Tests',
+            'performance': 'Performance Tests',
+            'security': 'Security Tests',
+            'adr-compliance': 'ADR Compliance Tests'
+        };
+
+        let currentTestId = null;
+        let currentUser = null;
+        let testUsers = [];
+
+        // Initialize the application
+        function init() {
+            loadTestData();
+            loadUserData();
+            renderTests();
+            updateStats();
+            setupEventListeners();
+            setupResultsEventListeners();
+            setupTestManagementEventListeners();
+            renderUserTiles();
+        }
+
+        // Load test data from localStorage
+        function loadTestData() {
+            const savedData = localStorage.getItem('testTrackerV2Data');
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                parsedData.forEach(savedTest => {
+                    const testIndex = testCases.findIndex(test => test.id === savedTest.id);
+                    if (testIndex !== -1) {
+                        testCases[testIndex] = { ...testCases[testIndex], ...savedTest };
+                        // Recalculate consolidated status
+                        testCases[testIndex].consolidatedStatus = calculateConsolidatedStatus(testCases[testIndex].userResults);
+                    }
+                });
+            }
+        }
+
+        // Save test data to localStorage
+        function saveTestData() {
+            localStorage.setItem('testTrackerV2Data', JSON.stringify(testCases));
+        }
+
+        // Calculate consolidated status based on user results
+        function calculateConsolidatedStatus(userResults) {
+            if (userResults.length === 0) {
+                return 'pending';
+            }
+
+            const statuses = userResults.map(result => result.status);
+            const uniqueStatuses = [...new Set(statuses)];
+
+            // If all users have the same status, use that status
+            if (uniqueStatuses.length === 1) {
+                return uniqueStatuses[0];
+            }
+
+            // If there are conflicting results (pass vs fail), mark as needs-review
+            if (statuses.includes('pass') && statuses.includes('fail')) {
+                return 'needs-review';
+            }
+
+            // If there are other conflicts, mark as needs-review
+            if (uniqueStatuses.length > 1) {
+                return 'needs-review';
+            }
+
+            return uniqueStatuses[0];
+        }
+
+        // Load user data from localStorage
+        function loadUserData() {
+            const savedUsers = localStorage.getItem('testTrackerV2Users');
+            if (savedUsers) {
+                testUsers = JSON.parse(savedUsers);
+            }
+            
+            const savedCurrentUser = localStorage.getItem('testTrackerV2CurrentUser');
+            if (savedCurrentUser) {
+                currentUser = savedCurrentUser;
+            }
+        }
+
+        // Get user test statistics
+        function getUserTestStats(userName) {
+            let totalTests = 0;
+            let passedTests = 0;
+            let failedTests = 0;
+            
+            testCases.forEach(test => {
+                const userResult = test.userResults.find(result => result.tester === userName);
+                if (userResult) {
+                    totalTests++;
+                    if (userResult.status === 'pass') passedTests++;
+                    if (userResult.status === 'fail') failedTests++;
+                }
+            });
+            
+            return { totalTests, passedTests, failedTests };
+        }
+
+        // Render user tiles
+        function renderUserTiles() {
+            // Render user tiles in Settings page
+            const userTilesContainer = document.getElementById('userTilesSettings');
+            
+            if (testUsers.length === 0) {
+                userTilesContainer.innerHTML = '<p style="text-align: center; color: #6c757d; font-style: italic;">No test users created yet</p>';
+                return;
+            }
+            
+            const tilesHtml = testUsers.map(user => {
+                const stats = getUserTestStats(user.name);
+                const isSelected = currentUser === user.name;
+                
+                return `
+                    <div class="user-tile ${isSelected ? 'selected' : ''}" onclick="selectUser('${user.name}')">
+                        <button class="delete-btn" onclick="deleteUser('${user.name}', event)" title="Delete user">×</button>
+                        <div class="user-name">${user.name}</div>
+                        <div class="user-stats">
+                            ${stats.totalTests} tests<br>
+                            ${stats.passedTests} passed, ${stats.failedTests} failed
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            userTilesContainer.innerHTML = tilesHtml;
+        }
+
+        // Select a user
+        function selectUser(userName) {
+            currentUser = userName;
+            saveUserData();
+            updateTesterDropdown();
+            renderUserTiles();
+        }
+
+        // Delete a user
+        function deleteUser(userName, event) {
+            event.stopPropagation(); // Prevent tile selection
+            
+            if (confirm(`Are you sure you want to delete user "${userName}"? This will also remove all their test results.`)) {
+                // Remove user from testUsers array
+                testUsers = testUsers.filter(user => user.name !== userName);
+                
+                // Remove user's test results from all tests
+                testCases.forEach(test => {
+                    test.userResults = test.userResults.filter(result => result.tester !== userName);
+                    test.consolidatedStatus = calculateConsolidatedStatus(test.userResults);
+                });
+                
+                // If deleted user was current user, clear current user
+                if (currentUser === userName) {
+                    currentUser = null;
+                }
+                
+                saveUserData();
+                saveTestData();
+                updateTesterDropdown();
+                renderUserTiles();
+                renderTests();
+                updateStats();
+                
+                alert(`User "${userName}" has been deleted.`);
+            }
+        }
+
+        // Save user data to localStorage
+        function saveUserData() {
+            localStorage.setItem('testTrackerV2Users', JSON.stringify(testUsers));
+            localStorage.setItem('testTrackerV2CurrentUser', currentUser);
+        }
+
+        // Create a new test user
+        function createUser() {
+            const userName = document.getElementById('newUserName').value.trim();
+            
+            if (!userName) {
+                alert('Please enter a name for the test user.');
+                return;
+            }
+            
+            if (testUsers.some(user => user.name === userName)) {
+                alert('A user with this name already exists.');
+                return;
+            }
+            
+            const newUser = {
+                name: userName,
+                createdDate: new Date().toISOString(),
+                id: Date.now().toString()
+            };
+            
+            testUsers.push(newUser);
+            currentUser = userName;
+            
+            document.getElementById('newUserName').value = '';
+            saveUserData();
+            updateTesterDropdown();
+            renderUserTiles();
+            
+            alert(`Welcome, ${userName}! You are now logged in as a test user.`);
+        }
+
+        // Switch to a different user
+        function switchUser() {
+            currentUser = null;
+            saveUserData();
+            updateCurrentUserDisplay();
+            updateTesterDropdown();
+        }
+
+        // Reset all user data
+        function resetUserData() {
+            if (confirm('Are you sure you want to reset all user data? This will:\n\n• Delete all test users\n• Remove all test results\n• Reset all test statuses to pending\n\nThis action cannot be undone.')) {
+                // Clear all user data
+                testUsers = [];
+                currentUser = null;
+                
+                // Clear all test results
+                testCases.forEach(test => {
+                    test.userResults = [];
+                    test.consolidatedStatus = 'pending';
+                });
+                
+                // Save changes
+                saveUserData();
+                saveTestData();
+                
+                // Update UI
+                updateTesterDropdown();
+                renderUserTiles();
+                renderTests();
+                updateStats();
+                
+                alert('All user data has been reset successfully.');
+            }
+        }
+
+
+        // Update tester dropdown in modal
+        function updateTesterDropdown() {
+            const testerSelect = document.getElementById('testerName');
+            testerSelect.innerHTML = '<option value="">Select a test user...</option>';
+            
+            testUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.name;
+                option.textContent = user.name;
+                if (user.name === currentUser) {
+                    option.selected = true;
+                }
+                testerSelect.appendChild(option);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('statusFilter').addEventListener('change', filterTests);
+            document.getElementById('categoryFilter').addEventListener('change', filterTests);
+            document.getElementById('priorityFilter').addEventListener('change', filterTests);
+            document.getElementById('testForm').addEventListener('submit', saveTestResult);
+            document.getElementById('testStatus').addEventListener('change', toggleBugReport);
+            document.getElementById('newUserName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    createUser();
+                }
+            });
+            document.getElementById('testerName').addEventListener('change', function(e) {
+                if (e.target.value) {
+                    selectUser(e.target.value);
+                }
+            });
+        }
+
+        // Render all tests
+        function renderTests() {
+            const testGrid = document.getElementById('testGrid');
+            const statusFilter = document.getElementById('statusFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            
+            // Group tests by category
+            const groupedTests = {};
+            testCases.forEach(test => {
+                if (!groupedTests[test.category]) {
+                    groupedTests[test.category] = [];
+                }
+                groupedTests[test.category].push(test);
+            });
+
+            let html = '';
+            
+            Object.keys(groupedTests).forEach(category => {
+                const categoryTests = groupedTests[category].filter(test => {
+                    const statusMatch = statusFilter === 'all' || test.consolidatedStatus === statusFilter;
+                    const categoryMatch = categoryFilter === 'all' || test.category === categoryFilter;
+                    const priorityMatch = priorityFilter === 'all' || test.priority === priorityFilter;
+                    return statusMatch && categoryMatch && priorityMatch;
+                });
+
+                if (categoryTests.length > 0) {
+                    html += `
+                        <div class="test-category">
+                            <div class="category-header">${categoryNames[category]}</div>
+                            <div class="test-cards">
+                                ${categoryTests.map(test => renderTestCard(test)).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            testGrid.innerHTML = html;
+        }
+
+        // Render individual test card with enhanced details
+        function renderTestCard(test) {
+            const statusClass = `status-${test.consolidatedStatus}`;
+            const statusText = test.consolidatedStatus.charAt(0).toUpperCase() + test.consolidatedStatus.slice(1).replace('-', ' ');
+            
+            // Generate test info section
+            const testInfoHtml = `
+                <div class="test-info-section">
+                    <h4>Test Information</h4>
+                    <p><strong>Estimated Time:</strong> ${test.estimatedTime}</p>
+                    <p><strong>Prerequisites:</strong> ${test.prerequisites}</p>
+                </div>
+            `;
+
+            // Generate test steps section
+            const testStepsHtml = `
+                <div class="test-steps">
+                    <h4>Test Steps</h4>
+                    <ol>
+                        ${test.testSteps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
+                </div>
+            `;
+
+            // Generate acceptance criteria section
+            const acceptanceCriteriaHtml = `
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        ${test.acceptanceCriteria.map(criteria => `<li>${criteria}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            // Generate status guidance section
+            const statusGuidanceHtml = `
+                <div class="status-guidance">
+                    <h4>Status Guidance</h4>
+                    <p><strong>Pass:</strong> ${test.statusGuidance.pass}</p>
+                    <p><strong>Fail:</strong> ${test.statusGuidance.fail}</p>
+                    <p><strong>Blocked:</strong> ${test.statusGuidance.blocked}</p>
+                    <p><strong>Partial:</strong> ${test.statusGuidance.partial}</p>
+                    <p><strong>Skip:</strong> ${test.statusGuidance.skip}</p>
+                </div>
+            `;
+
+            // Generate user results section
+            let userResultsHtml = '';
+            if (test.userResults.length > 0) {
+                userResultsHtml = `
+                    <div class="user-results">
+                        <h4>User Results (${test.userResults.length})</h4>
+                        ${test.userResults.map(result => `
+                            <div class="user-result-item">
+                                <div class="user-info">
+                                    <strong>${result.tester}</strong> - ${result.date}
+                                    ${result.notes ? `<br><em>${result.notes}</em>` : ''}
+                                </div>
+                                <div class="user-status status-${result.status}">${result.status.toUpperCase()}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="test-card">
+                    <div class="test-header">
+                        <div class="test-id">${test.id}</div>
+                        <div class="test-badges">
+                            <div class="priority-badge priority-${test.priority.toLowerCase()}">${test.priority}</div>
+                            <div class="status-badge ${statusClass}">${statusText}</div>
+                        </div>
+                    </div>
+                    <div class="test-title">${test.title}</div>
+                    <div class="test-story">${test.story}</div>
+                    ${testInfoHtml}
+                    ${testStepsHtml}
+                    ${acceptanceCriteriaHtml}
+                    ${statusGuidanceHtml}
+                    ${userResultsHtml}
+                    <div class="test-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openTestModal('${test.id}')">Add Result</button>
+                        ${test.consolidatedStatus === 'needs-review' ? `<button class="btn btn-info btn-sm" onclick="viewConflicts('${test.id}')">View Conflicts</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Filter tests
+        function filterTests() {
+            renderTests();
+        }
+
+        // Open test modal
+        function openTestModal(testId) {
+            currentTestId = testId;
+            const test = testCases.find(t => t.id === testId);
+            
+            document.getElementById('modalTitle').textContent = `Add Test Result - ${test.id}`;
+            document.getElementById('testStatus').value = 'pending';
+            document.getElementById('testDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('testNotes').value = '';
+            document.getElementById('environment').value = '';
+            
+            // Update tester dropdown and select current user if available
+            updateTesterDropdown();
+            
+            // Clear bug report fields
+            document.getElementById('bugSeverity').value = 'critical';
+            document.getElementById('bugDescription').value = '';
+            document.getElementById('stepsToReproduce').value = '';
+            document.getElementById('expectedResult').value = '';
+            document.getElementById('actualResult').value = '';
+            
+            toggleBugReport();
+            document.getElementById('testModal').style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('testModal').style.display = 'none';
+            currentTestId = null;
+        }
+
+        // Toggle bug report section
+        function toggleBugReport() {
+            const status = document.getElementById('testStatus').value;
+            const bugSection = document.getElementById('bugReportSection');
+            bugSection.style.display = status === 'fail' ? 'block' : 'none';
+        }
+
+        // Save test result
+        function saveTestResult(e) {
+            e.preventDefault();
+            
+            const test = testCases.find(t => t.id === currentTestId);
+            if (!test) return;
+            
+            const testerName = document.getElementById('testerName').value;
+            const status = document.getElementById('testStatus').value;
+            
+            // Check if this user already has a result for this test
+            const existingResultIndex = test.userResults.findIndex(result => result.tester === testerName);
+            
+            const newResult = {
+                tester: testerName,
+                status: status,
+                date: document.getElementById('testDate').value,
+                notes: document.getElementById('testNotes').value,
+                environment: document.getElementById('environment').value,
+                bugReport: null
+            };
+            
+            if (status === 'fail') {
+                newResult.bugReport = {
+                    severity: document.getElementById('bugSeverity').value,
+                    description: document.getElementById('bugDescription').value,
+                    stepsToReproduce: document.getElementById('stepsToReproduce').value,
+                    expectedResult: document.getElementById('expectedResult').value,
+                    actualResult: document.getElementById('actualResult').value
+                };
+            }
+            
+            if (existingResultIndex >= 0) {
+                // Update existing result
+                test.userResults[existingResultIndex] = newResult;
+            } else {
+                // Add new result
+                test.userResults.push(newResult);
+            }
+            
+            // Recalculate consolidated status
+            test.consolidatedStatus = calculateConsolidatedStatus(test.userResults);
+            
+            saveTestData();
+            renderTests();
+            updateStats();
+            closeModal();
+        }
+
+        // View conflicts for tests that need review
+        function viewConflicts(testId) {
+            const test = testCases.find(t => t.id === testId);
+            if (test && test.userResults.length > 1) {
+                const conflicts = test.userResults.map(result => 
+                    `${result.tester}: ${result.status.toUpperCase()} (${result.date})\n${result.notes ? `Notes: ${result.notes}\n` : ''}${result.bugReport ? `Bug: ${result.bugReport.description}\n` : ''}`
+                ).join('\n---\n');
+                
+                alert(`Conflicting Results for ${testId}:\n\n${conflicts}`);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const stats = {
+                pass: testCases.filter(t => t.consolidatedStatus === 'pass').length,
+                fail: testCases.filter(t => t.consolidatedStatus === 'fail').length,
+                blocked: testCases.filter(t => t.consolidatedStatus === 'blocked').length,
+                partial: testCases.filter(t => t.consolidatedStatus === 'partial').length,
+                skip: testCases.filter(t => t.consolidatedStatus === 'skip').length,
+                needsReview: testCases.filter(t => t.consolidatedStatus === 'needs-review').length,
+                total: testCases.length
+            };
+            
+            // Calculate completed tests (all non-pending statuses)
+            const completed = stats.pass + stats.fail + stats.blocked + stats.partial + stats.skip + stats.needsReview;
+            const total = testCases.length;
+            
+            document.getElementById('passCount').textContent = stats.pass;
+            document.getElementById('failCount').textContent = stats.fail;
+            document.getElementById('blockedCount').textContent = stats.blocked;
+            document.getElementById('partialCount').textContent = stats.partial;
+            document.getElementById('skipCount').textContent = stats.skip;
+            document.getElementById('needsReviewCount').textContent = stats.needsReview;
+            document.getElementById('completedCount').textContent = `${completed}/${total}`;
+            
+            const progress = (completed / stats.total) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        // Export results
+        function exportResults() {
+            const completedTests = testCases.filter(t => t.consolidatedStatus !== 'pending');
+            const exportData = completedTests.map(test => ({
+                'Test ID': test.id,
+                'Test Title': test.title,
+                'User Story': test.story,
+                'Category': categoryNames[test.category],
+                'Priority': test.priority,
+                'Estimated Time': test.estimatedTime,
+                'Consolidated Status': test.consolidatedStatus,
+                'User Results Count': test.userResults.length,
+                'User Results': test.userResults.map(result => 
+                    `${result.tester}: ${result.status} (${result.date})`
+                ).join('; '),
+                'Latest Bug Report': test.userResults.find(r => r.bugReport)?.bugReport?.description || '',
+                'Latest Bug Severity': test.userResults.find(r => r.bugReport)?.bugReport?.severity || ''
+            }));
+            
+            const csv = convertToCSV(exportData);
+            downloadCSV(csv, 'test-results-v2.csv');
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            exportResults();
+        }
+
+        // Export to JSON
+        function exportToJSON() {
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                version: '2.0',
+                totalTests: testCases.length,
+                completedTests: testCases.filter(t => t.consolidatedStatus !== 'pending').length,
+                testResults: testCases
+            };
+            
+            const json = JSON.stringify(exportData, null, 2);
+            downloadJSON(json, 'test-results-v2.json');
+        }
+
+        // Convert array to CSV
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+            ].join('\n');
+            return csvContent;
+        }
+
+        // Download CSV
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Download JSON
+        function downloadJSON(json, filename) {
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Reset all tests
+        function resetAllTests() {
+            if (confirm('Are you sure you want to reset all test results? This action cannot be undone.')) {
+                testCases.forEach(test => {
+                    test.userResults = [];
+                    test.consolidatedStatus = 'pending';
+                });
+                saveTestData();
+                renderTests();
+                updateStats();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('testModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Show results page
+        function showResultsPage() {
+            document.getElementById('testGrid').style.display = 'none';
+            document.getElementById('resultsPage').classList.add('active');
+            populateResultsFilters();
+            renderResultsTable();
+            updateResultsSummary();
+        }
+
+        // Hide results page
+        function hideResultsPage() {
+            document.getElementById('resultsPage').classList.remove('active');
+            document.getElementById('testGrid').style.display = 'block';
+        }
+
+        // Populate results page filters
+        function populateResultsFilters() {
+            // Populate user filter
+            const userFilter = document.getElementById('resultsUserFilter');
+            userFilter.innerHTML = '<option value="all">All Users</option>';
+            testUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.name;
+                option.textContent = user.name;
+                userFilter.appendChild(option);
+            });
+
+            // Populate test filter
+            const testFilter = document.getElementById('resultsTestFilter');
+            testFilter.innerHTML = '<option value="all">All Tests</option>';
+            testCases.forEach(test => {
+                const option = document.createElement('option');
+                option.value = test.id;
+                option.textContent = `${test.id} - ${test.title}`;
+                testFilter.appendChild(option);
+            });
+        }
+
+        // Render results table
+        function renderResultsTable() {
+            const tbody = document.getElementById('resultsTableBody');
+            const noResults = document.getElementById('noResults');
+            
+            // Get filter values
+            const userFilter = document.getElementById('resultsUserFilter').value;
+            const statusFilter = document.getElementById('resultsStatusFilter').value;
+            const testFilter = document.getElementById('resultsTestFilter').value;
+            
+            // Collect all results
+            let allResults = [];
+            testCases.forEach(test => {
+                test.userResults.forEach(result => {
+                    allResults.push({
+                        testId: test.id,
+                        testTitle: test.title,
+                        user: result.tester,
+                        status: result.status,
+                        date: result.date,
+                        environment: result.environment,
+                        notes: result.notes,
+                        bugReport: result.bugReport
+                    });
+                });
+            });
+            
+            // Apply filters
+            let filteredResults = allResults.filter(result => {
+                const userMatch = userFilter === 'all' || result.user === userFilter;
+                const statusMatch = statusFilter === 'all' || result.status === statusFilter;
+                const testMatch = testFilter === 'all' || result.testId === testFilter;
+                return userMatch && statusMatch && testMatch;
+            });
+            
+            // Sort by date (newest first)
+            filteredResults.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (filteredResults.length === 0) {
+                tbody.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            
+            // Render table rows
+            tbody.innerHTML = filteredResults.map(result => `
+                <tr>
+                    <td class="test-id-cell">${result.testId}</td>
+                    <td class="test-title-cell">${result.testTitle}</td>
+                    <td class="user-name-cell">${result.user}</td>
+                    <td class="status-cell">
+                        <span class="status-badge status-${result.status}">${result.status.toUpperCase()}</span>
+                    </td>
+                    <td class="date-cell">${result.date}</td>
+                    <td>${result.environment || '-'}</td>
+                    <td class="notes-cell" title="${result.notes || ''}">${result.notes || '-'}</td>
+                    <td>
+                        ${result.bugReport ? 
+                            `<button class="btn btn-outline btn-sm" onclick="viewBugReport('${result.testId}', '${result.user}')">View Bug</button>` : 
+                            '-'
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update results summary
+        function updateResultsSummary() {
+            const summaryStats = document.getElementById('summaryStats');
+            
+            // Calculate statistics
+            let totalResults = 0;
+            let totalUsers = testUsers.length;
+            let totalTests = testCases.length;
+            let completedTests = 0;
+            
+            testCases.forEach(test => {
+                if (test.userResults.length > 0) {
+                    completedTests++;
+                }
+                totalResults += test.userResults.length;
+            });
+            
+            summaryStats.innerHTML = `
+                <div class="summary-stat">
+                    <div class="number">${totalResults}</div>
+                    <div class="label">Total Results</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="number">${totalUsers}</div>
+                    <div class="label">Active Users</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="number">${completedTests}</div>
+                    <div class="label">Tests with Results</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="number">${totalTests}</div>
+                    <div class="label">Total Tests</div>
+                </div>
+            `;
+        }
+
+        // View bug report from results table
+        function viewBugReport(testId, userName) {
+            const test = testCases.find(t => t.id === testId);
+            if (test) {
+                const result = test.userResults.find(r => r.tester === userName);
+                if (result && result.bugReport) {
+                    alert(`Bug Report for ${testId} by ${userName}:\n\nSeverity: ${result.bugReport.severity}\nDescription: ${result.bugReport.description}\n\nSteps to Reproduce:\n${result.bugReport.stepsToReproduce}\n\nExpected Result:\n${result.bugReport.expectedResult}\n\nActual Result:\n${result.bugReport.actualResult}`);
+                }
+            }
+        }
+
+        // Export results table
+        function exportResultsTable() {
+            const userFilter = document.getElementById('resultsUserFilter').value;
+            const statusFilter = document.getElementById('resultsStatusFilter').value;
+            const testFilter = document.getElementById('resultsTestFilter').value;
+            
+            // Collect filtered results
+            let allResults = [];
+            testCases.forEach(test => {
+                test.userResults.forEach(result => {
+                    allResults.push({
+                        'Test ID': test.id,
+                        'Test Title': test.title,
+                        'User': result.tester,
+                        'Status': result.status,
+                        'Date': result.date,
+                        'Environment': result.environment || '',
+                        'Notes': result.notes || '',
+                        'Bug Severity': result.bugReport ? result.bugReport.severity : '',
+                        'Bug Description': result.bugReport ? result.bugReport.description : '',
+                        'Steps to Reproduce': result.bugReport ? result.bugReport.stepsToReproduce : '',
+                        'Expected Result': result.bugReport ? result.bugReport.expectedResult : '',
+                        'Actual Result': result.bugReport ? result.bugReport.actualResult : ''
+                    });
+                });
+            });
+            
+            // Apply same filters as table
+            let filteredResults = allResults.filter(result => {
+                const userMatch = userFilter === 'all' || result.User === userFilter;
+                const statusMatch = statusFilter === 'all' || result.Status === statusFilter;
+                const testMatch = testFilter === 'all' || result['Test ID'] === testFilter;
+                return userMatch && statusMatch && testMatch;
+            });
+            
+            if (filteredResults.length === 0) {
+                alert('No results to export with current filters.');
+                return;
+            }
+            
+            const csv = convertToCSV(filteredResults);
+            downloadCSV(csv, 'test-results-table.csv');
+        }
+
+        // Setup results page event listeners
+        function setupResultsEventListeners() {
+            document.getElementById('resultsUserFilter').addEventListener('change', renderResultsTable);
+            document.getElementById('resultsStatusFilter').addEventListener('change', renderResultsTable);
+            document.getElementById('resultsTestFilter').addEventListener('change', renderResultsTable);
+        }
+
+
+        // Test Management Functions
+        let currentEditingTestId = null;
+
+        // Show test management page
+        function showTestManagement() {
+            document.getElementById('testGrid').style.display = 'none';
+            document.getElementById('resultsPage').classList.remove('active');
+            document.getElementById('testManagementPage').classList.add('active');
+            renderTestManagementTable();
+            renderUserTiles();
+        }
+
+        // Hide test management page
+        function hideTestManagement() {
+            document.getElementById('testManagementPage').classList.remove('active');
+            document.getElementById('testGrid').style.display = 'block';
+        }
+
+        // Render test management table
+        function renderTestManagementTable() {
+            const tbody = document.getElementById('testManagementTableBody');
+            
+            tbody.innerHTML = testCases.map(test => `
+                <tr>
+                    <td class="test-id-cell">${test.id}</td>
+                    <td class="test-details-cell" title="${test.title}">${test.title}</td>
+                    <td>${categoryNames[test.category]}</td>
+                    <td>
+                        <div class="priority-badge priority-${test.priority.toLowerCase()}">${test.priority}</div>
+                    </td>
+                    <td>
+                        <div class="status-badge status-${test.consolidatedStatus}">${test.consolidatedStatus.toUpperCase()}</div>
+                    </td>
+                    <td>${test.userResults.length} result${test.userResults.length !== 1 ? 's' : ''}</td>
+                    <td class="test-actions-cell">
+                        <button class="btn btn-outline btn-sm" onclick="editTest('${test.id}')" title="Edit test">✏️</button>
+                        <button class="btn btn-warning btn-sm" onclick="duplicateTest('${test.id}')" title="Duplicate test">📋</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteTest('${test.id}')" title="Delete test">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Open create test modal
+        function openCreateTestModal() {
+            currentEditingTestId = null;
+            document.getElementById('testManagementModalTitle').textContent = 'Create New Test';
+            clearTestManagementForm();
+            document.getElementById('testManagementModal').style.display = 'block';
+        }
+
+        // Edit test
+        function editTest(testId) {
+            const test = testCases.find(t => t.id === testId);
+            if (!test) return;
+            
+            currentEditingTestId = testId;
+            document.getElementById('testManagementModalTitle').textContent = `Edit Test - ${testId}`;
+            
+            // Populate form with test data
+            document.getElementById('testId').value = test.id;
+            document.getElementById('testTitle').value = test.title;
+            document.getElementById('testStory').value = test.story;
+            document.getElementById('testCategory').value = test.category;
+            document.getElementById('testPriority').value = test.priority;
+            document.getElementById('testEstimatedTime').value = test.estimatedTime;
+            document.getElementById('testPrerequisites').value = test.prerequisites;
+            document.getElementById('testSteps').value = test.testSteps.join('\n');
+            document.getElementById('testAcceptanceCriteria').value = test.acceptanceCriteria.join('\n');
+            document.getElementById('passGuidance').value = test.statusGuidance.pass;
+            document.getElementById('failGuidance').value = test.statusGuidance.fail;
+            document.getElementById('blockedGuidance').value = test.statusGuidance.blocked;
+            document.getElementById('partialGuidance').value = test.statusGuidance.partial;
+            document.getElementById('skipGuidance').value = test.statusGuidance.skip;
+            
+            document.getElementById('testManagementModal').style.display = 'block';
+        }
+
+        // Duplicate test
+        function duplicateTest(testId) {
+            const test = testCases.find(t => t.id === testId);
+            if (!test) return;
+            
+            // Generate new ID
+            const newId = generateNewTestId();
+            
+            currentEditingTestId = null;
+            document.getElementById('testManagementModalTitle').textContent = 'Duplicate Test';
+            
+            // Populate form with test data but with new ID
+            document.getElementById('testId').value = newId;
+            document.getElementById('testTitle').value = `${test.title} (Copy)`;
+            document.getElementById('testStory').value = test.story;
+            document.getElementById('testCategory').value = test.category;
+            document.getElementById('testPriority').value = test.priority;
+            document.getElementById('testEstimatedTime').value = test.estimatedTime;
+            document.getElementById('testPrerequisites').value = test.prerequisites;
+            document.getElementById('testSteps').value = test.testSteps.join('\n');
+            document.getElementById('testAcceptanceCriteria').value = test.acceptanceCriteria.join('\n');
+            document.getElementById('passGuidance').value = test.statusGuidance.pass;
+            document.getElementById('failGuidance').value = test.statusGuidance.fail;
+            document.getElementById('blockedGuidance').value = test.statusGuidance.blocked;
+            document.getElementById('partialGuidance').value = test.statusGuidance.partial;
+            document.getElementById('skipGuidance').value = test.statusGuidance.skip;
+            
+            document.getElementById('testManagementModal').style.display = 'block';
+        }
+
+        // Delete test
+        function deleteTest(testId) {
+            const test = testCases.find(t => t.id === testId);
+            if (!test) return;
+            
+            if (confirm(`Are you sure you want to delete test "${testId}"?\n\nThis will permanently remove:\n• The test definition\n• All test results from all users\n\nThis action cannot be undone.`)) {
+                // Remove test from array
+                const testIndex = testCases.findIndex(t => t.id === testId);
+                if (testIndex !== -1) {
+                    testCases.splice(testIndex, 1);
+                }
+                
+                // Save and update UI
+                saveTestData();
+                renderTestManagementTable();
+                renderTests();
+                updateStats();
+                
+                alert(`Test "${testId}" has been deleted successfully.`);
+            }
+        }
+
+        // Generate new test ID
+        function generateNewTestId() {
+            const existingIds = testCases.map(t => t.id);
+            let counter = testCases.length + 1;
+            let newId;
+            
+            do {
+                newId = `TC-${counter.toString().padStart(3, '0')}`;
+                counter++;
+            } while (existingIds.includes(newId));
+            
+            return newId;
+        }
+
+        // Clear test management form
+        function clearTestManagementForm() {
+            document.getElementById('testId').value = '';
+            document.getElementById('testTitle').value = '';
+            document.getElementById('testStory').value = '';
+            document.getElementById('testCategory').value = 'system-admin';
+            document.getElementById('testPriority').value = 'High';
+            document.getElementById('testEstimatedTime').value = '';
+            document.getElementById('testPrerequisites').value = '';
+            document.getElementById('testSteps').value = '';
+            document.getElementById('testAcceptanceCriteria').value = '';
+            document.getElementById('passGuidance').value = '';
+            document.getElementById('failGuidance').value = '';
+            document.getElementById('blockedGuidance').value = '';
+            document.getElementById('partialGuidance').value = '';
+            document.getElementById('skipGuidance').value = '';
+        }
+
+        // Close test management modal
+        function closeTestManagementModal() {
+            document.getElementById('testManagementModal').style.display = 'none';
+            currentEditingTestId = null;
+        }
+
+        // Save test (create or update)
+        function saveTest(e) {
+            e.preventDefault();
+            
+            const testData = {
+                id: document.getElementById('testId').value.trim(),
+                title: document.getElementById('testTitle').value.trim(),
+                story: document.getElementById('testStory').value.trim(),
+                category: document.getElementById('testCategory').value,
+                priority: document.getElementById('testPriority').value,
+                estimatedTime: document.getElementById('testEstimatedTime').value.trim(),
+                prerequisites: document.getElementById('testPrerequisites').value.trim(),
+                testSteps: document.getElementById('testSteps').value.split('\n').filter(step => step.trim()),
+                acceptanceCriteria: document.getElementById('testAcceptanceCriteria').value.split('\n').filter(criteria => criteria.trim()),
+                statusGuidance: {
+                    pass: document.getElementById('passGuidance').value.trim(),
+                    fail: document.getElementById('failGuidance').value.trim(),
+                    blocked: document.getElementById('blockedGuidance').value.trim(),
+                    partial: document.getElementById('partialGuidance').value.trim(),
+                    skip: document.getElementById('skipGuidance').value.trim()
+                },
+                userResults: [],
+                consolidatedStatus: 'pending'
+            };
+            
+            // Validate required fields
+            if (!testData.id || !testData.title || !testData.story) {
+                alert('Please fill in all required fields (Test ID, Title, and User Story).');
+                return;
+            }
+            
+            // Check for duplicate ID (only when creating new test)
+            if (!currentEditingTestId && testCases.some(t => t.id === testData.id)) {
+                alert('A test with this ID already exists. Please choose a different ID.');
+                return;
+            }
+            
+            if (currentEditingTestId) {
+                // Update existing test
+                const testIndex = testCases.findIndex(t => t.id === currentEditingTestId);
+                if (testIndex !== -1) {
+                    // Preserve existing user results and consolidated status
+                    testData.userResults = testCases[testIndex].userResults;
+                    testData.consolidatedStatus = testCases[testIndex].consolidatedStatus;
+                    testCases[testIndex] = testData;
+                }
+            } else {
+                // Add new test
+                testCases.push(testData);
+            }
+            
+            // Save and update UI
+            saveTestData();
+            renderTestManagementTable();
+            renderTests();
+            updateStats();
+            closeTestManagementModal();
+            
+            alert(`Test "${testData.id}" has been saved successfully.`);
+        }
+
+        // Export test definitions
+        function exportTestDefinitions() {
+            const exportData = testCases.map(test => ({
+                'Test ID': test.id,
+                'Title': test.title,
+                'User Story': test.story,
+                'Category': categoryNames[test.category],
+                'Priority': test.priority,
+                'Estimated Time': test.estimatedTime,
+                'Prerequisites': test.prerequisites,
+                'Test Steps': test.testSteps.join('; '),
+                'Acceptance Criteria': test.acceptanceCriteria.join('; '),
+                'Status Guidance - Pass': test.statusGuidance.pass,
+                'Status Guidance - Fail': test.statusGuidance.fail,
+                'Status Guidance - Blocked': test.statusGuidance.blocked,
+                'Status Guidance - Partial': test.statusGuidance.partial,
+                'Status Guidance - Skip': test.statusGuidance.skip,
+                'Current Status': test.consolidatedStatus,
+                'User Results Count': test.userResults.length
+            }));
+            
+            const csv = convertToCSV(exportData);
+            downloadCSV(csv, 'test-definitions.csv');
+        }
+
+        // Setup test management event listeners
+        function setupTestManagementEventListeners() {
+            document.getElementById('testManagementForm').addEventListener('submit', saveTest);
+        }
+
+        // Initialize the application when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
