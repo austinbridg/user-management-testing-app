@@ -561,10 +561,158 @@ const startServer = async () => {
       if (users.length === 0 && tests.length === 0) {
         console.log('🌱 Database is empty, seeding initial data...');
         
-        // Import and run migration/seeding
-        const Migration = require('./migrate');
-        const migration = new Migration();
-        await migration.seedInitialData();
+        // Seed default user
+        await db.createUser('Austin');
+        console.log('✅ Seeded default user: Austin');
+        
+        // Seed comprehensive test data
+        const testData = [
+          {
+            id: 'TC-001',
+            title: 'Create Users Across Organizations',
+            story: 'US-001 - Create and manage users across all organizations',
+            category: 'system-admin',
+            priority: 'High',
+            estimatedTime: '15 minutes',
+            prerequisites: 'System Administrator access, Test organizations available',
+            testSteps: JSON.stringify([
+              'Navigate to User Management section',
+              'Click "Create New User" button',
+              'Fill in user details (name, email, organization)',
+              'Select appropriate role and permissions',
+              'Save user and verify creation'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'User is created successfully',
+              'User appears in organization user list',
+              'User receives welcome email',
+              'User can log in with provided credentials'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'User creation works as expected',
+              fail: 'User creation fails or has issues',
+              blocked: 'Cannot access user management or missing permissions',
+              partial: 'User created but some features not working',
+              needsReview: 'User created but requires manual verification'
+            })
+          },
+          {
+            id: 'TC-002',
+            title: 'User Role Assignment',
+            story: 'US-002 - Assign and modify user roles within organizations',
+            category: 'system-admin',
+            priority: 'High',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Existing users, Role management access',
+            testSteps: JSON.stringify([
+              'Select user from organization list',
+              'Click "Edit Roles" button',
+              'Modify role assignments',
+              'Save changes and verify'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Role changes are saved successfully',
+              'User permissions reflect new role',
+              'Changes are logged in audit trail'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Role assignment works correctly',
+              fail: 'Role changes fail to save or apply',
+              blocked: 'Cannot access role management',
+              partial: 'Some role changes work, others fail',
+              needsReview: 'Role changes need manual verification'
+            })
+          },
+          {
+            id: 'TC-003',
+            title: 'Organization User Listing',
+            story: 'US-003 - View and filter users by organization',
+            category: 'functional',
+            priority: 'Medium',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Multiple organizations with users',
+            testSteps: JSON.stringify([
+              'Navigate to Organization Management',
+              'Select organization from dropdown',
+              'View user list for selected organization',
+              'Test filtering and search functionality'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Correct users displayed for organization',
+              'Filtering works as expected',
+              'Search returns accurate results'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'User listing and filtering work correctly',
+              fail: 'Incorrect users shown or filtering broken',
+              blocked: 'Cannot access organization management',
+              partial: 'Some features work, others fail',
+              needsReview: 'Results need manual verification'
+            })
+          },
+          {
+            id: 'TC-004',
+            title: 'User Deactivation',
+            story: 'US-004 - Deactivate users while preserving data',
+            category: 'system-admin',
+            priority: 'High',
+            estimatedTime: '12 minutes',
+            prerequisites: 'Active users in system',
+            testSteps: JSON.stringify([
+              'Select user to deactivate',
+              'Click "Deactivate User" button',
+              'Confirm deactivation action',
+              'Verify user status change'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'User is deactivated successfully',
+              'User data is preserved',
+              'User cannot log in',
+              'Deactivation is logged'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'User deactivation works correctly',
+              fail: 'Deactivation fails or data lost',
+              blocked: 'Cannot access deactivation feature',
+              partial: 'Deactivation works but data issues',
+              needsReview: 'Deactivation needs manual verification'
+            })
+          },
+          {
+            id: 'TC-005',
+            title: 'Bulk User Operations',
+            story: 'US-005 - Perform bulk operations on multiple users',
+            category: 'system-admin',
+            priority: 'Medium',
+            estimatedTime: '20 minutes',
+            prerequisites: 'Multiple users in system',
+            testSteps: JSON.stringify([
+              'Select multiple users using checkboxes',
+              'Choose bulk operation (activate, deactivate, role change)',
+              'Confirm bulk operation',
+              'Verify changes applied to all selected users'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Bulk operation completes successfully',
+              'All selected users are affected',
+              'Operation is logged for each user',
+              'No partial failures'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Bulk operations work correctly',
+              fail: 'Bulk operation fails or partial failure',
+              blocked: 'Cannot access bulk operations',
+              partial: 'Some users affected, others not',
+              needsReview: 'Bulk operation results need verification'
+            })
+          }
+        ];
+        
+        // Insert test data
+        for (const test of testData) {
+          await db.createTest(test);
+          console.log(`✅ Seeded test: ${test.id}`);
+        }
         
         console.log('✅ Initial data seeded successfully');
       } else {
