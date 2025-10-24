@@ -455,6 +455,13 @@
             background-color: rgba(0,0,0,0.5);
         }
 
+        /* Disable body scrolling when modal is open */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
         .modal-content {
             background-color: white;
             margin: 2% auto;
@@ -735,6 +742,7 @@
             gap: 20px;
             align-items: center;
             flex-wrap: wrap;
+            border-bottom: none;
         }
 
         .results-filters label {
@@ -923,6 +931,37 @@
             flex-wrap: wrap;
         }
 
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-right: 25px;
+            transition: background-color 0.2s ease;
+        }
+
+        .sortable-header:hover {
+            background-color: #74787E;
+        }
+
+        .sort-arrow {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: white;
+            transition: color 0.2s ease;
+        }
+
+        .sortable-header.active .sort-arrow {
+            color: white;
+            font-weight: bold;
+        }
+
+        .sortable-header.active {
+            background-color: #657385;
+        }
+
         .test-management-table {
             background: white;
             border-radius: 10px;
@@ -943,14 +982,45 @@
             font-weight: 600;
         }
 
+        .test-management-table th:nth-child(1) { width: 80px; }  /* Test ID */
+        .test-management-table th:nth-child(2) { width: 200px; } /* Title */
+        .test-management-table th:nth-child(3) { width: 120px; } /* Category */
+        .test-management-table th:nth-child(4) { width: 100px; } /* Priority */
+        .test-management-table th:nth-child(5) { width: 100px; } /* Status */
+        .test-management-table th:nth-child(6) { width: 80px; }  /* Results */
+        .test-management-table th:nth-child(7) { width: 150px; } /* Actions */
+
         .test-management-table td {
             padding: 12px 15px;
             border-bottom: 1px solid #e9ecef;
             vertical-align: top;
         }
 
+        .test-management-table td:nth-child(1) { width: 80px; }  /* Test ID */
+        .test-management-table td:nth-child(2) { width: 200px; } /* Title */
+        .test-management-table td:nth-child(3) { width: 120px; } /* Category */
+        .test-management-table td:nth-child(4) { width: 100px; } /* Priority */
+        .test-management-table td:nth-child(5) { width: 100px; } /* Status */
+        .test-management-table td:nth-child(6) { width: 80px; }  /* Results */
+        .test-management-table td:nth-child(7) { width: 150px; } /* Actions */
+
         .test-management-table tr:hover {
             background: #f8f9fa;
+        }
+
+        .test-row {
+            transition: background-color 0.2s ease;
+        }
+
+        .test-row:hover {
+            background: #e3f2fd !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .test-row:active {
+            background: #bbdefb !important;
+            transform: translateY(0);
         }
 
         .test-management-table tr:last-child td {
@@ -985,12 +1055,18 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            cursor: help;
         }
 
-        .test-details-cell:hover {
-            white-space: normal;
-            overflow: visible;
-            max-width: none;
+        .test-management-table td:nth-child(3) { /* Category */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: help;
+        }
+
+        .test-management-table td:nth-child(6) { /* Results */
+            text-align: center;
         }
 
         .settings-section {
@@ -1223,12 +1299,22 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Test ID</th>
+                                <th class="sortable-header" data-sort="id" onclick="sortByColumn('id')">
+                                    Test ID <span class="sort-arrow" id="sort-arrow-id">↑</span>
+                                </th>
                                 <th>Title</th>
-                                <th>Category</th>
-                                <th>Priority</th>
-                                <th>Status</th>
-                                <th>Results</th>
+                                <th class="sortable-header" data-sort="category" onclick="sortByColumn('category')">
+                                    Category <span class="sort-arrow" id="sort-arrow-category">↕</span>
+                                </th>
+                                <th class="sortable-header" data-sort="priority" onclick="sortByColumn('priority')">
+                                    Priority <span class="sort-arrow" id="sort-arrow-priority">↕</span>
+                                </th>
+                                <th class="sortable-header" data-sort="status" onclick="sortByColumn('status')">
+                                    Status <span class="sort-arrow" id="sort-arrow-status">↕</span>
+                                </th>
+                                <th class="sortable-header" data-sort="results" onclick="sortByColumn('results')">
+                                    Results <span class="sort-arrow" id="sort-arrow-results">↕</span>
+                                </th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -1441,8 +1527,164 @@
     </div>
 
     <script>
+        // API Client for database operations
+        class APIClient {
+            constructor() {
+                this.baseURL = '/api';
+            }
+
+            async request(endpoint, options = {}) {
+                try {
+                    const response = await fetch(`${this.baseURL}${endpoint}`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...options.headers
+                        },
+                        ...options
+                    });
+
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Request failed');
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.error('API request failed:', error);
+                    throw error;
+                }
+            }
+
+            // User operations
+            async getUsers() {
+                const response = await this.request('/users');
+                return response.users;
+            }
+
+            async createUser(name) {
+                const response = await this.request('/users', {
+                    method: 'POST',
+                    body: JSON.stringify({ name })
+                });
+                return response.user;
+            }
+
+            async updateUser(id, name) {
+                const response = await this.request(`/users/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ name })
+                });
+                return response.user;
+            }
+
+            async deleteUser(id) {
+                const response = await this.request(`/users/${id}`, {
+                    method: 'DELETE'
+                });
+                return response;
+            }
+
+            // Test operations
+            async getTests() {
+                const response = await this.request('/tests');
+                return response.tests;
+            }
+
+            async getTest(id) {
+                const response = await this.request(`/tests/${id}`);
+                return response.test;
+            }
+
+            async createTest(testData) {
+                const response = await this.request('/tests', {
+                    method: 'POST',
+                    body: JSON.stringify(testData)
+                });
+                return response.test;
+            }
+
+            async updateTest(id, testData) {
+                const response = await this.request(`/tests/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(testData)
+                });
+                return response.test;
+            }
+
+            async deleteTest(id) {
+                const response = await this.request(`/tests/${id}`, {
+                    method: 'DELETE'
+                });
+                return response;
+            }
+
+            // Test result operations
+            async getTestResults() {
+                const response = await this.request('/test-results');
+                return response.testResults;
+            }
+
+            async getTestResultsByTestId(testId) {
+                const response = await this.request(`/tests/${testId}/results`);
+                return response.testResults;
+            }
+
+            async createTestResult(resultData) {
+                const response = await this.request('/test-results', {
+                    method: 'POST',
+                    body: JSON.stringify(resultData)
+                });
+                return response.testResult;
+            }
+
+            async updateTestResult(id, resultData) {
+                const response = await this.request(`/test-results/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(resultData)
+                });
+                return response.testResult;
+            }
+
+            async deleteTestResult(id) {
+                const response = await this.request(`/test-results/${id}`, {
+                    method: 'DELETE'
+                });
+                return response;
+            }
+
+            // Statistics
+            async getStats() {
+                const response = await this.request('/stats');
+                return response.stats;
+            }
+
+            async getUserStats(userId) {
+                const response = await this.request(`/users/${userId}/stats`);
+                return response.stats;
+            }
+        }
+
+        // Initialize API client
+        const api = new APIClient();
+
+        // Modal scroll management
+        let scrollPosition = 0;
+        
+        function disableBodyScroll() {
+            scrollPosition = window.pageYOffset;
+            document.body.style.top = `-${scrollPosition}px`;
+            document.body.classList.add('modal-open');
+        }
+        
+        function enableBodyScroll() {
+            document.body.classList.remove('modal-open');
+            document.body.style.top = '';
+            window.scrollTo(0, scrollPosition);
+        }
+        
         // Enhanced test data structure with detailed information
-        const testCases = [
+        let testCases = [
             // System Administrator Tests
             {
                 id: 'TC-001',
@@ -2507,10 +2749,12 @@
             'org-admin': 'Organization Administrator Tests',
             'org-member': 'Organization Member Tests',
             'hr-admin': 'HR Administrator Tests',
+            'end-user': 'End User Tests',
             'cross-role': 'Cross-Role Tests',
             'integration': 'Integration Tests',
             'performance': 'Performance Tests',
             'security': 'Security Tests',
+            'advanced': 'Advanced Tests',
             'adr-compliance': 'ADR Compliance Tests'
         };
 
@@ -2519,36 +2763,117 @@
         let testUsers = [];
 
         // Initialize the application
-        function init() {
-            loadTestData();
-            loadUserData();
-            renderTests();
-            updateStats();
-            setupEventListeners();
-            setupResultsEventListeners();
-            setupTestManagementEventListeners();
-            renderUserTiles();
-        }
-
-        // Load test data from localStorage
-        function loadTestData() {
-            const savedData = localStorage.getItem('testTrackerV2Data');
-            if (savedData) {
-                const parsedData = JSON.parse(savedData);
-                parsedData.forEach(savedTest => {
-                    const testIndex = testCases.findIndex(test => test.id === savedTest.id);
-                    if (testIndex !== -1) {
-                        testCases[testIndex] = { ...testCases[testIndex], ...savedTest };
-                        // Recalculate consolidated status
-                        testCases[testIndex].consolidatedStatus = calculateConsolidatedStatus(testCases[testIndex].userResults);
-                    }
-                });
+        async function init() {
+            try {
+                console.log('🚀 Initializing application...');
+                
+                // Load data from database
+                await loadDataFromAPI();
+                
+                console.log('✅ Data loaded successfully');
+                console.log('Users:', testUsers.length);
+                console.log('Tests:', testCases.length);
+                
+                renderTests();
+                updateStats();
+                setupEventListeners();
+                setupResultsEventListeners();
+                setupTestManagementEventListeners();
+                renderUserTiles();
+                
+                console.log('✅ Application initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize application:', error);
+                alert('Failed to load data from server. Please refresh the page.');
             }
         }
 
-        // Save test data to localStorage
-        function saveTestData() {
-            localStorage.setItem('testTrackerV2Data', JSON.stringify(testCases));
+        // Load data from API
+        async function loadDataFromAPI() {
+            try {
+                console.log('📡 Loading users from API...');
+                // Load users from database
+                const users = await api.getUsers();
+                testUsers = users.map(user => ({
+                    id: user.id,
+                    name: user.name,
+                    createdDate: user.created_at
+                }));
+                console.log('✅ Users loaded:', testUsers.length);
+
+                console.log('📡 Loading tests from API...');
+                // Load tests from database
+                const tests = await api.getTests();
+                console.log('✅ Tests loaded:', tests.length);
+                
+                // Clear existing test cases and load from database
+                testCases = [];
+                
+                // Load test results for each test
+                for (const test of tests) {
+                    console.log(`📡 Loading test results for ${test.id}...`);
+                    const testResults = await api.getTestResultsByTestId(test.id);
+                    
+                    // Transform test results to match frontend format
+                    const userResults = testResults.map(result => ({
+                        tester: result.user_name,
+                        status: result.status,
+                        date: result.test_date,
+                        environment: result.environment,
+                        notes: result.notes,
+                        bugSeverity: result.bug_severity,
+                        bugDescription: result.bug_description,
+                        stepsToReproduce: result.steps_to_reproduce,
+                        expectedResult: result.expected_result,
+                        actualResult: result.actual_result
+                    }));
+
+                    // Add test to testCases array
+                    testCases.push({
+                        id: test.id,
+                        title: test.title,
+                        story: test.story,
+                        category: test.category,
+                        priority: test.priority,
+                        estimatedTime: test.estimated_time,
+                        prerequisites: test.prerequisites,
+                        testSteps: JSON.parse(test.test_steps),
+                        acceptanceCriteria: JSON.parse(test.acceptance_criteria),
+                        statusGuidance: JSON.parse(test.status_guidance),
+                        userResults: userResults,
+                        consolidatedStatus: calculateConsolidatedStatus(userResults)
+                    });
+                }
+                console.log('✅ All data loaded successfully');
+            } catch (error) {
+                console.error('❌ Failed to load data from API:', error);
+                throw error;
+            }
+        }
+
+        // Switch to a different user
+        function switchUser() {
+            currentUser = null;
+            updateTesterDropdown();
+            renderUserTiles();
+        }
+
+        // Get user test statistics
+        function getUserTestStats(userName) {
+            let totalTests = 0;
+            let passedTests = 0;
+            let failedTests = 0;
+            
+            testCases.forEach(test => {
+                const userResult = test.userResults.find(result => result.tester === userName);
+                if (userResult) {
+                    totalTests++;
+                    if (userResult.status === 'pass') passedTests++;
+                    if (userResult.status === 'fail') failedTests++;
+                }
+            });
+            
+            return { totalTests, passedTests, failedTests };
         }
 
         // Calculate consolidated status based on user results
@@ -2578,35 +2903,11 @@
             return uniqueStatuses[0];
         }
 
-        // Load user data from localStorage
-        function loadUserData() {
-            const savedUsers = localStorage.getItem('testTrackerV2Users');
-            if (savedUsers) {
-                testUsers = JSON.parse(savedUsers);
-            }
-            
-            const savedCurrentUser = localStorage.getItem('testTrackerV2CurrentUser');
-            if (savedCurrentUser) {
-                currentUser = savedCurrentUser;
-            }
-        }
-
-        // Get user test statistics
-        function getUserTestStats(userName) {
-            let totalTests = 0;
-            let passedTests = 0;
-            let failedTests = 0;
-            
-            testCases.forEach(test => {
-                const userResult = test.userResults.find(result => result.tester === userName);
-                if (userResult) {
-                    totalTests++;
-                    if (userResult.status === 'pass') passedTests++;
-                    if (userResult.status === 'fail') failedTests++;
-                }
-            });
-            
-            return { totalTests, passedTests, failedTests };
+        // Select a user
+        function selectUser(userName) {
+            currentUser = userName;
+            updateTesterDropdown();
+            renderUserTiles();
         }
 
         // Render user tiles
@@ -2647,43 +2948,73 @@
         }
 
         // Delete a user
-        function deleteUser(userName, event) {
+        async function deleteUser(userName, event) {
             event.stopPropagation(); // Prevent tile selection
             
             if (confirm(`Are you sure you want to delete user "${userName}"? This will also remove all their test results.`)) {
-                // Remove user from testUsers array
-                testUsers = testUsers.filter(user => user.name !== userName);
-                
-                // Remove user's test results from all tests
-                testCases.forEach(test => {
-                    test.userResults = test.userResults.filter(result => result.tester !== userName);
-                    test.consolidatedStatus = calculateConsolidatedStatus(test.userResults);
-                });
-                
-                // If deleted user was current user, clear current user
-                if (currentUser === userName) {
-                    currentUser = null;
+                try {
+                    // Find user ID
+                    const user = testUsers.find(u => u.name === userName);
+                    if (!user) {
+                        alert('User not found.');
+                        return;
+                    }
+                    
+                    // Delete user from database
+                    await api.deleteUser(user.id);
+                    
+                    // Remove user from local array
+                    testUsers = testUsers.filter(u => u.name !== userName);
+                    
+                    // Remove user's test results from all tests
+                    testCases.forEach(test => {
+                        test.userResults = test.userResults.filter(result => result.tester !== userName);
+                        test.consolidatedStatus = calculateConsolidatedStatus(test.userResults);
+                    });
+                    
+                    // If deleted user was current user, clear current user
+                    if (currentUser === userName) {
+                        currentUser = null;
+                    }
+                    
+                    updateTesterDropdown();
+                    renderUserTiles();
+                    renderTests();
+                    updateStats();
+                    
+                    alert(`User "${userName}" has been deleted.`);
+                } catch (error) {
+                    alert(`Failed to delete user: ${error.message}`);
                 }
-                
-                saveUserData();
-                saveTestData();
-                updateTesterDropdown();
-                renderUserTiles();
-                renderTests();
-                updateStats();
-                
-                alert(`User "${userName}" has been deleted.`);
             }
         }
 
-        // Save user data to localStorage
-        function saveUserData() {
-            localStorage.setItem('testTrackerV2Users', JSON.stringify(testUsers));
-            localStorage.setItem('testTrackerV2CurrentUser', currentUser);
+        // Calculate consolidated status based on user results
+        function calculateConsolidatedStatus(userResults) {
+            if (userResults.length === 0) {
+                return 'pending';
+            }
+
+            const statuses = userResults.map(result => result.status);
+            const uniqueStatuses = [...new Set(statuses)];
+
+            if (uniqueStatuses.length === 1) {
+                return uniqueStatuses[0];
+            }
+
+            // Priority order: fail > blocked > partial > skip > pass
+            const priorityOrder = ['fail', 'blocked', 'partial', 'skip', 'pass'];
+            for (const status of priorityOrder) {
+                if (uniqueStatuses.includes(status)) {
+                    return status;
+                }
+            }
+
+            return uniqueStatuses[0];
         }
 
         // Create a new test user
-        function createUser() {
+        async function createUser() {
             const userName = document.getElementById('newUserName').value.trim();
             
             if (!userName) {
@@ -2691,26 +3022,30 @@
                 return;
             }
             
-            if (testUsers.some(user => user.name === userName)) {
-                alert('A user with this name already exists.');
-                return;
+            try {
+                const newUser = await api.createUser(userName);
+                
+                // Add to local array for immediate UI update
+                testUsers.push({
+                    id: newUser.id,
+                    name: newUser.name,
+                    createdDate: new Date().toISOString()
+                });
+                
+                currentUser = userName;
+                
+                document.getElementById('newUserName').value = '';
+                updateTesterDropdown();
+                renderUserTiles();
+                
+                alert(`Welcome, ${userName}! You are now logged in as a test user.`);
+            } catch (error) {
+                if (error.message.includes('already exists')) {
+                    alert('A user with this name already exists.');
+                } else {
+                    alert(`Failed to create user: ${error.message}`);
+                }
             }
-            
-            const newUser = {
-                name: userName,
-                createdDate: new Date().toISOString(),
-                id: Date.now().toString()
-            };
-            
-            testUsers.push(newUser);
-            currentUser = userName;
-            
-            document.getElementById('newUserName').value = '';
-            saveUserData();
-            updateTesterDropdown();
-            renderUserTiles();
-            
-            alert(`Welcome, ${userName}! You are now logged in as a test user.`);
         }
 
         // Switch to a different user
@@ -2808,6 +3143,19 @@
                     const categoryMatch = categoryFilter === 'all' || test.category === categoryFilter;
                     const priorityMatch = priorityFilter === 'all' || test.priority === priorityFilter;
                     return statusMatch && categoryMatch && priorityMatch;
+                });
+
+                // Sort tests within each category by Test ID (ascending)
+                categoryTests.sort((a, b) => {
+                    // Extract numeric part for proper alphanumeric sorting
+                    const aNum = parseInt(a.id.replace(/\D/g, '')) || 0;
+                    const bNum = parseInt(b.id.replace(/\D/g, '')) || 0;
+                    
+                    if (aNum !== bNum) {
+                        return aNum - bNum;
+                    }
+                    // If numeric parts are equal, sort by full string
+                    return a.id.localeCompare(b.id);
                 });
 
                 if (categoryTests.length > 0) {
@@ -2941,12 +3289,14 @@
             document.getElementById('actualResult').value = '';
             
             toggleBugReport();
+            disableBodyScroll();
             document.getElementById('testModal').style.display = 'block';
         }
 
         // Close modal
         function closeModal() {
             document.getElementById('testModal').style.display = 'none';
+            enableBodyScroll();
             currentTestId = null;
         }
 
@@ -3350,13 +3700,127 @@
 
         // Test Management Functions
         let currentEditingTestId = null;
+        let sortedTests = []; // Store sorted tests
+        let currentSortColumn = 'id'; // Current sort column
+        let currentSortOrder = 'asc'; // Current sort order (asc/desc)
+
+        // Initialize sort state
+        function initializeSort() {
+            sortedTests = [...testCases];
+            currentSortColumn = 'id';
+            currentSortOrder = 'asc';
+            updateSortIndicators();
+            sortTests();
+        }
+
+        // Sort by column header click
+        function sortByColumn(column) {
+            if (currentSortColumn === column) {
+                // Toggle order if same column
+                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                // New column, default to ascending
+                currentSortColumn = column;
+                currentSortOrder = 'asc';
+            }
+            
+            updateSortIndicators();
+            sortTests();
+        }
+
+        // Update sort indicators in headers
+        function updateSortIndicators() {
+            // Reset all arrows
+            document.querySelectorAll('.sort-arrow').forEach(arrow => {
+                arrow.textContent = '↕';
+                arrow.parentElement.classList.remove('active');
+            });
+            
+            // Set active column arrow
+            const activeArrow = document.getElementById(`sort-arrow-${currentSortColumn}`);
+            if (activeArrow) {
+                activeArrow.textContent = currentSortOrder === 'asc' ? '↑' : '↓';
+                activeArrow.parentElement.classList.add('active');
+            }
+        }
+
+        // Sort tests based on current sort settings
+        function sortTests() {
+            sortedTests = [...testCases].sort((a, b) => {
+                let aValue, bValue;
+                
+                switch (currentSortColumn) {
+                    case 'id':
+                        // Alphanumeric sorting for Test ID
+                        aValue = a.id;
+                        bValue = b.id;
+                        break;
+                    case 'category':
+                        aValue = categoryNames[a.category] || a.category;
+                        bValue = categoryNames[b.category] || b.category;
+                        break;
+                    case 'priority':
+                        // Priority order: High > Medium > Low
+                        const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+                        aValue = priorityOrder[a.priority] || 0;
+                        bValue = priorityOrder[b.priority] || 0;
+                        break;
+                    case 'status':
+                        aValue = a.consolidatedStatus;
+                        bValue = b.consolidatedStatus;
+                        break;
+                    case 'results':
+                        // Numeric sorting for results count
+                        aValue = a.userResults.length;
+                        bValue = b.userResults.length;
+                        break;
+                    default:
+                        aValue = a.id;
+                        bValue = b.id;
+                }
+                
+                // Handle alphanumeric comparison for Test ID
+                if (currentSortColumn === 'id') {
+                    // Extract numeric part for proper alphanumeric sorting
+                    const aNum = parseInt(aValue.replace(/\D/g, '')) || 0;
+                    const bNum = parseInt(bValue.replace(/\D/g, '')) || 0;
+                    
+                    if (aNum !== bNum) {
+                        return currentSortOrder === 'asc' ? aNum - bNum : bNum - aNum;
+                    }
+                    // If numeric parts are equal, sort by full string
+                    return currentSortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+                }
+                
+                // Handle numeric comparison for results
+                if (currentSortColumn === 'results') {
+                    return currentSortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+                }
+                
+                // Handle priority numeric comparison
+                if (currentSortColumn === 'priority') {
+                    return currentSortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+                }
+                
+                // Handle string comparison for other fields
+                if (aValue < bValue) {
+                    return currentSortOrder === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return currentSortOrder === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+            
+            renderTestManagementTable();
+        }
 
         // Show test management page
         function showTestManagement() {
             document.getElementById('testGrid').style.display = 'none';
             document.getElementById('resultsPage').classList.remove('active');
             document.getElementById('testManagementPage').classList.add('active');
-            renderTestManagementTable();
+            initializeSort(); // Initialize sorting
             renderUserTiles();
         }
 
@@ -3370,19 +3834,22 @@
         function renderTestManagementTable() {
             const tbody = document.getElementById('testManagementTableBody');
             
-            tbody.innerHTML = testCases.map(test => `
-                <tr>
-                    <td class="test-id-cell">${test.id}</td>
+            // Use sortedTests if available, otherwise use testCases
+            const testsToRender = sortedTests.length > 0 ? sortedTests : testCases;
+            
+            tbody.innerHTML = testsToRender.map(test => `
+                <tr class="test-row" onclick="editTest('${test.id}')" style="cursor: pointer;">
+                    <td class="test-id-cell" title="Test ID: ${test.id}">${test.id}</td>
                     <td class="test-details-cell" title="${test.title}">${test.title}</td>
-                    <td>${categoryNames[test.category]}</td>
+                    <td title="${categoryNames[test.category]}">${categoryNames[test.category]}</td>
                     <td>
-                        <div class="priority-badge priority-${test.priority.toLowerCase()}">${test.priority}</div>
+                        <div class="priority-badge priority-${test.priority.toLowerCase()}" title="Priority: ${test.priority}">${test.priority}</div>
                     </td>
                     <td>
-                        <div class="status-badge status-${test.consolidatedStatus}">${test.consolidatedStatus.toUpperCase()}</div>
+                        <div class="status-badge status-${test.consolidatedStatus}" title="Status: ${test.consolidatedStatus.toUpperCase()}">${test.consolidatedStatus.toUpperCase()}</div>
                     </td>
-                    <td>${test.userResults.length} result${test.userResults.length !== 1 ? 's' : ''}</td>
-                    <td class="test-actions-cell">
+                    <td title="${test.userResults.length} test result${test.userResults.length !== 1 ? 's' : ''}">${test.userResults.length} result${test.userResults.length !== 1 ? 's' : ''}</td>
+                    <td class="test-actions-cell" onclick="event.stopPropagation();">
                         <button class="btn btn-outline btn-sm" onclick="editTest('${test.id}')" title="Edit test">✏️</button>
                         <button class="btn btn-warning btn-sm" onclick="duplicateTest('${test.id}')" title="Duplicate test">📋</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteTest('${test.id}')" title="Delete test">🗑️</button>
@@ -3396,6 +3863,7 @@
             currentEditingTestId = null;
             document.getElementById('testManagementModalTitle').textContent = 'Create New Test';
             clearTestManagementForm();
+            disableBodyScroll();
             document.getElementById('testManagementModal').style.display = 'block';
         }
 
@@ -3423,6 +3891,7 @@
             document.getElementById('partialGuidance').value = test.statusGuidance.partial;
             document.getElementById('skipGuidance').value = test.statusGuidance.skip;
             
+            disableBodyScroll();
             document.getElementById('testManagementModal').style.display = 'block';
         }
 
@@ -3453,6 +3922,7 @@
             document.getElementById('partialGuidance').value = test.statusGuidance.partial;
             document.getElementById('skipGuidance').value = test.statusGuidance.skip;
             
+            disableBodyScroll();
             document.getElementById('testManagementModal').style.display = 'block';
         }
 
@@ -3470,7 +3940,7 @@
                 
                 // Save and update UI
                 saveTestData();
-                renderTestManagementTable();
+                initializeSort(); // Re-initialize sorting after deletion
                 renderTests();
                 updateStats();
                 
@@ -3513,6 +3983,7 @@
         // Close test management modal
         function closeTestManagementModal() {
             document.getElementById('testManagementModal').style.display = 'none';
+            enableBodyScroll();
             currentEditingTestId = null;
         }
 
@@ -3569,7 +4040,7 @@
             
             // Save and update UI
             saveTestData();
-            renderTestManagementTable();
+            initializeSort(); // Re-initialize sorting after save
             renderTests();
             updateStats();
             closeTestManagementModal();

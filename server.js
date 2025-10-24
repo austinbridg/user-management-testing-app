@@ -1,73 +1,44 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs-extra');
 const path = require('path');
+const Database = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize database
+const db = new Database();
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
-// Data file path - Render uses ephemeral filesystem
-const DATA_FILE = path.join(__dirname, 'data', 'test-data.json');
-
-// Ensure data directory exists
-fs.ensureDirSync(path.dirname(DATA_FILE));
-
-// Initialize data file if it doesn't exist
-const initializeDataFile = () => {
-  if (!fs.existsSync(DATA_FILE)) {
-    const initialData = {
-      testCases: [],
-      testUsers: [],
-      currentUser: null,
-      lastUpdated: new Date().toISOString()
-    };
-    fs.writeJsonSync(DATA_FILE, initialData, { spaces: 2 });
-    console.log('📁 Initialized data file:', DATA_FILE);
-  }
-};
-
-// Load data from file
-const loadData = () => {
-  try {
-    return fs.readJsonSync(DATA_FILE);
-  } catch (error) {
-    console.error('Error loading data:', error);
-    return {
-      testCases: [],
-      testUsers: [],
-      currentUser: null,
-      lastUpdated: new Date().toISOString()
-    };
-  }
-};
-
-// Save data to file
-const saveData = (data) => {
-  try {
-    data.lastUpdated = new Date().toISOString();
-    fs.writeJsonSync(DATA_FILE, data, { spaces: 2 });
-    return true;
-  } catch (error) {
-    console.error('Error saving data:', error);
-    return false;
-  }
-};
-
 // API Routes
 
-// Get all test data
-app.get('/api/data', (req, res) => {
+// Get all data (for backward compatibility)
+app.get('/api/data', async (req, res) => {
   try {
-    const data = loadData();
+    const [tests, users, testResults] = await Promise.all([
+      db.getTests(),
+      db.getUsers(),
+      db.getTestResults()
+    ]);
+
+    // Transform data to match frontend expectations
+    const transformedTests = tests.map(test => ({
+      ...test,
+      userResults: testResults.filter(result => result.test_id === test.id)
+    }));
+
     res.json({
       success: true,
-      data: data
+      data: {
+        testCases: transformedTests,
+        testUsers: users,
+        currentUser: null // Will be handled by frontend
+      }
     });
   } catch (error) {
     res.status(500).json({
@@ -78,8 +49,8 @@ app.get('/api/data', (req, res) => {
   }
 });
 
-// Save all test data
-app.post('/api/data', (req, res) => {
+// Save all data (for backward compatibility)
+app.post('/api/data', async (req, res) => {
   try {
     const { testCases, testUsers, currentUser } = req.body;
     
@@ -90,99 +61,31 @@ app.post('/api/data', (req, res) => {
       });
     }
 
-    const data = {
-      testCases,
-      testUsers,
-      currentUser,
-      lastUpdated: new Date().toISOString()
-    };
-
-    const saved = saveData(data);
-    
-    if (saved) {
-      res.json({
-        success: true,
-        message: 'Data saved successfully',
-        data: data
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: 'Failed to save data'
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to save data',
-      message: error.message
-    });
-  }
-});
-
-// Get test cases only
-app.get('/api/tests', (req, res) => {
-  try {
-    const data = loadData();
+    // This endpoint is mainly for backward compatibility
+    // Individual CRUD operations should be used instead
     res.json({
       success: true,
-      testCases: data.testCases
+      message: 'Data structure received. Use individual CRUD endpoints for better performance.',
+      data: { testCases, testUsers, currentUser }
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Failed to load test cases',
+      error: 'Failed to process data',
       message: error.message
     });
   }
 });
 
-// Save test cases only
-app.post('/api/tests', (req, res) => {
-  try {
-    const { testCases } = req.body;
-    
-    if (!Array.isArray(testCases)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid test cases format'
-      });
-    }
+// USER API ENDPOINTS
 
-    const data = loadData();
-    data.testCases = testCases;
-    
-    const saved = saveData(data);
-    
-    if (saved) {
-      res.json({
-        success: true,
-        message: 'Test cases saved successfully',
-        testCases: data.testCases
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: 'Failed to save test cases'
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: 'Failed to save test cases',
-      message: error.message
-    });
-  }
-});
-
-// Get users only
-app.get('/api/users', (req, res) => {
+// Get all users
+app.get('/api/users', async (req, res) => {
   try {
-    const data = loadData();
+    const users = await db.getUsers();
     res.json({
       success: true,
-      testUsers: data.testUsers,
-      currentUser: data.currentUser
+      users: users
     });
   } catch (error) {
     res.status(500).json({
@@ -193,41 +96,412 @@ app.get('/api/users', (req, res) => {
   }
 });
 
-// Save users only
-app.post('/api/users', (req, res) => {
+// Get user by ID
+app.get('/api/users/:id', async (req, res) => {
   try {
-    const { testUsers, currentUser } = req.body;
-    
-    if (!Array.isArray(testUsers)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid users format'
-      });
-    }
-
-    const data = loadData();
-    data.testUsers = testUsers;
-    data.currentUser = currentUser;
-    
-    const saved = saveData(data);
-    
-    if (saved) {
+    const user = await db.getUserById(req.params.id);
+    if (user) {
       res.json({
         success: true,
-        message: 'Users saved successfully',
-        testUsers: data.testUsers,
-        currentUser: data.currentUser
+        user: user
       });
     } else {
-      res.status(500).json({
+      res.status(404).json({
         success: false,
-        error: 'Failed to save users'
+        error: 'User not found'
       });
     }
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Failed to save users',
+      error: 'Failed to load user',
+      message: error.message
+    });
+  }
+});
+
+// Create a new user
+app.post('/api/users', async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name || name.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'User name is required'
+      });
+    }
+
+    const user = await db.createUser(name.trim());
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      user: user
+    });
+  } catch (error) {
+    if (error.message.includes('UNIQUE constraint failed')) {
+      res.status(409).json({
+        success: false,
+        error: 'User with this name already exists'
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create user',
+        message: error.message
+      });
+    }
+  }
+});
+
+// Update user
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name || name.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'User name is required'
+      });
+    }
+
+    const result = await db.updateUser(req.params.id, name.trim());
+    if (result.changes > 0) {
+      res.json({
+        success: true,
+        message: 'User updated successfully',
+        user: result
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update user',
+      message: error.message
+    });
+  }
+});
+
+// Delete user
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const result = await db.deleteUser(req.params.id);
+    if (result.changes > 0) {
+      res.json({
+        success: true,
+        message: 'User deleted successfully'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete user',
+      message: error.message
+    });
+  }
+});
+
+// TEST API ENDPOINTS
+
+// Get all tests
+app.get('/api/tests', async (req, res) => {
+  try {
+    const tests = await db.getTests();
+    res.json({
+      success: true,
+      tests: tests
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load tests',
+      message: error.message
+    });
+  }
+});
+
+// Get test by ID
+app.get('/api/tests/:id', async (req, res) => {
+  try {
+    const test = await db.getTestById(req.params.id);
+    if (test) {
+      res.json({
+        success: true,
+        test: test
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Test not found'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load test',
+      message: error.message
+    });
+  }
+});
+
+// Create a new test
+app.post('/api/tests', async (req, res) => {
+  try {
+    const testData = req.body;
+    
+    if (!testData.id || !testData.title) {
+      return res.status(400).json({
+        success: false,
+        error: 'Test ID and title are required'
+      });
+    }
+
+    const test = await db.createTest(testData);
+    res.status(201).json({
+      success: true,
+      message: 'Test created successfully',
+      test: test
+    });
+  } catch (error) {
+    if (error.message.includes('UNIQUE constraint failed')) {
+      res.status(409).json({
+        success: false,
+        error: 'Test with this ID already exists'
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create test',
+        message: error.message
+      });
+    }
+  }
+});
+
+// Update test
+app.put('/api/tests/:id', async (req, res) => {
+  try {
+    const testData = req.body;
+    const result = await db.updateTest(req.params.id, testData);
+    
+    if (result.changes > 0) {
+      res.json({
+        success: true,
+        message: 'Test updated successfully',
+        test: result
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Test not found'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update test',
+      message: error.message
+    });
+  }
+});
+
+// Delete test
+app.delete('/api/tests/:id', async (req, res) => {
+  try {
+    const result = await db.deleteTest(req.params.id);
+    if (result.changes > 0) {
+      res.json({
+        success: true,
+        message: 'Test deleted successfully'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Test not found'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete test',
+      message: error.message
+    });
+  }
+});
+
+// TEST RESULTS API ENDPOINTS
+
+// Get all test results
+app.get('/api/test-results', async (req, res) => {
+  try {
+    const testResults = await db.getTestResults();
+    res.json({
+      success: true,
+      testResults: testResults
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load test results',
+      message: error.message
+    });
+  }
+});
+
+// Get test results by test ID
+app.get('/api/tests/:id/results', async (req, res) => {
+  try {
+    const testResults = await db.getTestResultsByTestId(req.params.id);
+    res.json({
+      success: true,
+      testResults: testResults
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load test results',
+      message: error.message
+    });
+  }
+});
+
+// Get test results by user ID
+app.get('/api/users/:id/results', async (req, res) => {
+  try {
+    const testResults = await db.getTestResultsByUserId(req.params.id);
+    res.json({
+      success: true,
+      testResults: testResults
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load test results',
+      message: error.message
+    });
+  }
+});
+
+// Create a new test result
+app.post('/api/test-results', async (req, res) => {
+  try {
+    const resultData = req.body;
+    
+    if (!resultData.testId || !resultData.userId || !resultData.status) {
+      return res.status(400).json({
+        success: false,
+        error: 'Test ID, User ID, and status are required'
+      });
+    }
+
+    const testResult = await db.createTestResult(resultData);
+    res.status(201).json({
+      success: true,
+      message: 'Test result created successfully',
+      testResult: testResult
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create test result',
+      message: error.message
+    });
+  }
+});
+
+// Update test result
+app.put('/api/test-results/:id', async (req, res) => {
+  try {
+    const resultData = req.body;
+    const result = await db.updateTestResult(req.params.id, resultData);
+    
+    if (result.changes > 0) {
+      res.json({
+        success: true,
+        message: 'Test result updated successfully',
+        testResult: result
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Test result not found'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update test result',
+      message: error.message
+    });
+  }
+});
+
+// Delete test result
+app.delete('/api/test-results/:id', async (req, res) => {
+  try {
+    const result = await db.deleteTestResult(req.params.id);
+    if (result.changes > 0) {
+      res.json({
+        success: true,
+        message: 'Test result deleted successfully'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Test result not found'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete test result',
+      message: error.message
+    });
+  }
+});
+
+// STATISTICS API ENDPOINTS
+
+// Get overall test statistics
+app.get('/api/stats', async (req, res) => {
+  try {
+    const stats = await db.getTestStats();
+    res.json({
+      success: true,
+      stats: stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load statistics',
+      message: error.message
+    });
+  }
+});
+
+// Get user-specific statistics
+app.get('/api/users/:id/stats', async (req, res) => {
+  try {
+    const stats = await db.getUserStats(req.params.id);
+    res.json({
+      success: true,
+      stats: stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to load user statistics',
       message: error.message
     });
   }
@@ -269,21 +543,49 @@ app.use((req, res) => {
   });
 });
 
-// Initialize data file and start server
-initializeDataFile();
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    // Initialize database
+    const dbInitialized = await db.init();
+    if (!dbInitialized) {
+      console.error('❌ Failed to initialize database. Exiting...');
+      process.exit(1);
+    }
 
-// Start server - Render will set PORT automatically
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Test Tracker Backend running on port ${PORT}`);
-  console.log(`📊 API endpoints available at http://localhost:${PORT}/api/`);
-  console.log(`🌐 Frontend available at http://localhost:${PORT}/`);
-  console.log(`💾 Data stored in: ${DATA_FILE}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  
-  if (process.env.RENDER) {
-    console.log(`☁️  Deployed on Render`);
-    console.log(`🔗 Public URL: ${process.env.RENDER_EXTERNAL_URL || 'Not available'}`);
+    // Start server - Render will set PORT automatically
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Test Tracker Backend running on port ${PORT}`);
+      console.log(`📊 API endpoints available at http://localhost:${PORT}/api/`);
+      console.log(`🌐 Frontend available at http://localhost:${PORT}/`);
+      console.log(`💾 Database: ${db.dbPath}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      
+      if (process.env.RENDER) {
+        console.log(`☁️  Deployed on Render`);
+        console.log(`🔗 Public URL: ${process.env.RENDER_EXTERNAL_URL || 'Not available'}`);
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
   }
+};
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down server...');
+  db.close();
+  process.exit(0);
 });
+
+process.on('SIGTERM', () => {
+  console.log('\n🛑 Shutting down server...');
+  db.close();
+  process.exit(0);
+});
+
+// Start the server
+startServer();
 
 module.exports = app;
