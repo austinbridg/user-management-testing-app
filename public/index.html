@@ -1535,7 +1535,10 @@
 
             async request(endpoint, options = {}) {
                 try {
-                    const response = await fetch(`${this.baseURL}${endpoint}`, {
+                    const url = `${this.baseURL}${endpoint}`;
+                    console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
+                    
+                    const response = await fetch(url, {
                         headers: {
                             'Content-Type': 'application/json',
                             ...options.headers
@@ -1543,15 +1546,24 @@
                         ...options
                     });
 
-                    const data = await response.json();
+                    console.log(`📡 API Response: ${response.status} ${response.statusText}`);
                     
                     if (!response.ok) {
-                        throw new Error(data.error || 'Request failed');
+                        const errorText = await response.text();
+                        console.error(`❌ API Error Response:`, errorText);
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
                     }
 
+                    const data = await response.json();
+                    console.log(`✅ API Success:`, data);
                     return data;
                 } catch (error) {
-                    console.error('API request failed:', error);
+                    console.error('❌ API request failed:', {
+                        endpoint,
+                        method: options.method || 'GET',
+                        error: error.message,
+                        stack: error.stack
+                    });
                     throw error;
                 }
             }
@@ -2767,8 +2779,30 @@
             try {
                 console.log('🚀 Initializing application...');
                 
-                // Load data from database
-                await loadDataFromAPI();
+                // Add a small delay to ensure server is ready
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Load data from database with retry
+                let retryCount = 0;
+                const maxRetries = 3;
+                
+                while (retryCount < maxRetries) {
+                    try {
+                        console.log(`📡 Attempt ${retryCount + 1} to load data...`);
+                        await loadDataFromAPI();
+                        break; // Success, exit retry loop
+                    } catch (error) {
+                        retryCount++;
+                        console.warn(`⚠️ Attempt ${retryCount} failed:`, error.message);
+                        
+                        if (retryCount >= maxRetries) {
+                            throw error; // Re-throw if all retries failed
+                        }
+                        
+                        // Wait before retry
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
                 
                 console.log('✅ Data loaded successfully');
                 console.log('Users:', testUsers.length);
@@ -2784,7 +2818,12 @@
                 console.log('✅ Application initialized successfully');
             } catch (error) {
                 console.error('❌ Failed to initialize application:', error);
-                alert('Failed to load data from server. Please refresh the page.');
+                console.error('❌ Final error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                alert(`Failed to load data from server: ${error.message}. Please refresh the page.`);
             }
         }
 
@@ -2847,6 +2886,12 @@
                 console.log('✅ All data loaded successfully');
             } catch (error) {
                 console.error('❌ Failed to load data from API:', error);
+                console.error('❌ Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name,
+                    url: error.url || 'Unknown URL'
+                });
                 throw error;
             }
         }
