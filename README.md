@@ -68,7 +68,7 @@ npm start
 # Access the application
 # Login page: http://localhost:3000/login
 # Main app: http://localhost:3000/app
-# Password: GoodbyeVertex2025
+# Password: cursifyvertex2025
 ```
 
 ### Development Mode
@@ -174,7 +174,7 @@ npm run report
 ### Environment Variables
 - **PORT** - Server port (Render sets this automatically)
 - **NODE_ENV** - Environment mode (production on Render)
-- **APP_PASSWORD** - Application password (default: GoodbyeVertex2025)
+- **APP_PASSWORD** - Application password (default: cursifyvertex2025)
 - **SESSION_SECRET** - Session secret (auto-generated)
 
 ### Security Features
@@ -195,7 +195,7 @@ services:
     startCommand: npm start
     envVars:
       - key: APP_PASSWORD
-        value: GoodbyeVertex2025
+        value: cursifyvertex2025
     healthCheckPath: /api/health
     autoDeploy: true
 ```

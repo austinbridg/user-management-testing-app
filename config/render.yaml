@@ -10,7 +10,7 @@ services:
         value: production
       - key: PORT
         value: 3000
-      - key: APP_PASSWORD
-        value: CursifyVertex2025
+             - key: APP_PASSWORD
+               value: cursifyvertex2025
     healthCheckPath: /api/health
     autoDeploy: true
