@@ -1,6 +1,15 @@
-# Test Tracker Backend - Render Edition
+# User Management Test Tracker
 
-A lightweight Node.js backend for the User and Group Management Test Tracker application, optimized for deployment on Render.
+A comprehensive web application for tracking and managing user testing of User Management, Roles, and Groups functionality. Built with Node.js backend, SQLite database, and modern frontend components.
+
+## 🎯 Purpose
+
+This application enables teams to:
+- **Track test case execution** across multiple testers
+- **Manage user testing workflows** for User Management features
+- **Generate comprehensive reports** on test progress and results
+- **Collaborate on testing** with password-protected access
+- **Maintain test case database** with automated migration tools
 
 ## 🌐 Quick Deploy to Render
 
@@ -15,13 +24,26 @@ A lightweight Node.js backend for the User and Group Management Test Tracker app
 
 ## 🚀 Features
 
-- ✅ **Render Optimized:** Configured specifically for Render deployment
-- ✅ **Auto-Deploy:** Automatic deployments on code changes
-- ✅ **Health Monitoring:** Built-in health check endpoint
-- ✅ **HTTPS Included:** Secure connections out of the box
-- ✅ **Free Tier:** Deploy for free with Render's free plan
-- ✅ **Mobile Friendly:** Works on all devices
-- ✅ **Team Sharing:** Share with colleagues instantly
+### Core Functionality
+- ✅ **Test Case Management**: 35+ comprehensive test cases for User Management features
+- ✅ **User Testing Tracking**: Multiple testers can execute and track test results
+- ✅ **Real-time Progress**: Live updates on test completion and status
+- ✅ **Test Result Management**: Edit, delete, and manage test results
+- ✅ **Comprehensive Reporting**: Detailed test reports and statistics
+
+### Technical Features
+- ✅ **Database Backend**: SQLite database with automatic seeding
+- ✅ **Password Protection**: Secure access with session management
+- ✅ **Modern UI**: Responsive design with modal interactions
+- ✅ **API Architecture**: RESTful API with organized endpoints
+- ✅ **Migration System**: Automated test case updates from work directory
+
+### Deployment Features
+- ✅ **Render Optimized**: Configured specifically for Render deployment
+- ✅ **Auto-Deploy**: Automatic deployments on code changes
+- ✅ **Health Monitoring**: Built-in health check endpoint
+- ✅ **HTTPS Included**: Secure connections out of the box
+- ✅ **Free Tier**: Deploy for free with Render's free plan
 
 ## 📋 Prerequisites
 
@@ -34,8 +56,8 @@ A lightweight Node.js backend for the User and Group Management Test Tracker app
 ### Quick Start
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/test-tracker-render.git
-cd test-tracker-render
+git clone https://github.com/abridgforth/user-management-testing-app.git
+cd user-management-testing-app
 
 # Install dependencies
 npm install
@@ -43,77 +65,108 @@ npm install
 # Start development server
 npm start
 
-# Open in browser
-open http://localhost:3000
+# Access the application
+# Login page: http://localhost:3000/login
+# Main app: http://localhost:3000/app
+# Password: GoodbyeVertex2025
 ```
 
 ### Development Mode
 ```bash
-# Install nodemon for auto-restart
-npm install -g nodemon
-
 # Start with auto-restart
 npm run dev
+
+# Database operations
+npm run seed          # Seed test cases from work directory
+npm run clear-tests   # Clear all test cases
+npm run report        # Generate test report
+```
+
+### Project Structure
+```
+├── src/                    # Backend source code
+│   ├── server.js          # Main server entry point
+│   ├── models/            # Database models
+│   └── utils/             # Utility functions
+├── public/                # Frontend static files
+│   ├── index.html         # Main application
+│   ├── login.html         # Login page
+│   └── js/                # Frontend modules
+├── config/                # Configuration files
+├── scripts/               # Utility scripts
+├── docs/                  # Documentation
+└── work/                  # Development files
 ```
 
 ## 🔌 API Endpoints
 
-### Core Data Endpoints
-- **GET** `/api/data` - Get all test data
-- **POST** `/api/data` - Save all test data
+### Authentication
+- **GET** `/login` - Login page
+- **POST** `/api/login` - Authenticate user
+- **POST** `/api/logout` - Logout user
+- **GET** `/api/auth-status` - Check authentication status
 
-### Specific Data Endpoints
-- **GET** `/api/tests` - Get test cases only
-- **POST** `/api/tests` - Save test cases only
-- **GET** `/api/users` - Get users and current user
-- **POST** `/api/users` - Save users and current user
+### Test Management
+- **GET** `/api/tests` - Get all test cases
+- **GET** `/api/tests/:id` - Get specific test case
+- **POST** `/api/tests` - Create new test case
+- **PUT** `/api/tests/:id` - Update test case
+- **DELETE** `/api/tests/:id` - Delete test case
 
-### Utility Endpoints
+### User Management
+- **GET** `/api/users` - Get all users
+- **POST** `/api/users` - Create new user
+- **DELETE** `/api/users/:id` - Delete user
+
+### Test Results
+- **GET** `/api/test-results` - Get all test results
+- **GET** `/api/tests/:id/results` - Get results for specific test
+- **POST** `/api/test-results` - Create test result
+- **PUT** `/api/test-results/:id` - Update test result
+- **DELETE** `/api/test-results/:id` - Delete test result
+
+### Statistics & Reports
+- **GET** `/api/stats` - Get overall statistics
+- **GET** `/api/users/:id/stats` - Get user-specific statistics
+
+### Utility
 - **GET** `/api/health` - Health check endpoint
-- **GET** `/` - Serve the frontend application
+- **GET** `/app` - Main application (requires authentication)
 
-## 📊 Data Format
+## 📊 Test Case Database
 
-### Test Data Structure
-```json
-{
-  "testCases": [
-    {
-      "id": "TC-001",
-      "title": "Test Case Title",
-      "story": "User Story",
-      "category": "category-name",
-      "priority": "High",
-      "estimatedTime": "15 minutes",
-      "prerequisites": ["Prerequisite 1"],
-      "testSteps": ["Step 1", "Step 2"],
-      "acceptanceCriteria": ["Criteria 1"],
-      "statusGuidance": "Guidance text",
-      "userResults": [
-        {
-          "tester": "User Name",
-          "status": "pass",
-          "date": "2024-01-15T10:30:00Z",
-          "notes": "Test notes",
-          "bugReport": {
-            "description": "Bug description",
-            "severity": "High"
-          }
-        }
-      ],
-      "consolidatedStatus": "pass"
-    }
-  ],
-  "testUsers": [
-    {
-      "name": "User Name",
-      "createdDate": "2024-01-15T10:30:00Z",
-      "id": "unique-id"
-    }
-  ],
-  "currentUser": "User Name",
-  "lastUpdated": "2024-01-15T10:30:00Z"
-}
+### Test Case Structure
+The application includes 35+ comprehensive test cases covering:
+
+- **User Management** (7 test cases): User invites, validation, organization association
+- **Role Management** (4 test cases): Default roles, custom roles, permission assignment
+- **Group Management** (2 test cases): Group creation and member management
+- **Hierarchy Access** (2 test cases): Access parameters and scope picker
+- **Authentication** (2 test cases): EIM authentication and token generation
+- **Performance** (2 test cases): Access preview and search performance
+- **Edge Cases** (2 test cases): No access states and orphan user management
+
+### Database Schema
+- **Tests Table**: Test case definitions with steps, criteria, and guidance
+- **Users Table**: Tester information and management
+- **Test Results Table**: Individual test execution results with bug reports
+
+### Migration System
+```bash
+# Update test cases from work directory
+npm run seed
+
+# Seed from specific JavaScript file
+npm run seed-js work/user-management-test-cases-app-format.js
+
+# Seed from markdown documentation
+npm run seed-md work/user-management-test-cases-comprehensive-docs.md
+
+# Clear all test cases
+npm run clear-tests
+
+# Generate test report
+npm run report
 ```
 
 ## 🔧 Configuration
@@ -121,10 +174,17 @@ npm run dev
 ### Environment Variables
 - **PORT** - Server port (Render sets this automatically)
 - **NODE_ENV** - Environment mode (production on Render)
-- **RENDER** - Automatically set by Render platform
+- **APP_PASSWORD** - Application password (default: GoodbyeVertex2025)
+- **SESSION_SECRET** - Session secret (auto-generated)
+
+### Security Features
+- **Password Protection**: Secure access with configurable password
+- **Session Management**: Short-lived sessions (30 seconds) for security
+- **Auto-logout**: Sessions expire on page refresh/close
+- **HTTPS Ready**: Secure connections in production
 
 ### Render Configuration
-The `render.yaml` file configures automatic deployment:
+The `config/render.yaml` file configures automatic deployment:
 ```yaml
 services:
   - type: web
@@ -133,6 +193,9 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm start
+    envVars:
+      - key: APP_PASSWORD
+        value: GoodbyeVertex2025
     healthCheckPath: /api/health
     autoDeploy: true
 ```
