@@ -91,6 +91,9 @@ dist
 tmp/
 temp/
 
+# Working directory for local development
+work/
+
 # Logs
 logs
 *.log

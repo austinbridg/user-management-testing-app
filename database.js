@@ -204,7 +204,7 @@ class Database {
     // Get all tests
     async getTests() {
         return new Promise((resolve, reject) => {
-            this.db.all('SELECT * FROM tests ORDER BY created_at DESC', (err, rows) => {
+            this.db.all('SELECT * FROM tests ORDER BY id ASC', (err, rows) => {
                 if (err) {
                     reject(err);
                 } else {

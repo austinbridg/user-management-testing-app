@@ -101,8 +101,8 @@ app.get('/api/users/:id', async (req, res) => {
   try {
     const user = await db.getUserById(req.params.id);
     if (user) {
-      res.json({
-        success: true,
+    res.json({
+      success: true,
         user: user
       });
     } else {
@@ -180,8 +180,8 @@ app.put('/api/users/:id', async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({
-      success: false,
+      res.status(500).json({
+        success: false,
       error: 'Failed to update user',
       message: error.message
     });
@@ -308,8 +308,8 @@ app.put('/api/tests/:id', async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({
-      success: false,
+      res.status(500).json({
+        success: false,
       error: 'Failed to update test',
       message: error.message
     });
@@ -404,6 +404,15 @@ app.post('/api/test-results', async (req, res) => {
         error: 'Test ID, User ID, and status are required'
       });
     }
+    
+    // Validate status
+    const validStatuses = ['pass', 'fail', 'blocked', 'partial', 'skip', 'pending'];
+    if (!validStatuses.includes(resultData.status)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      });
+    }
 
     const testResult = await db.createTestResult(resultData);
     res.status(201).json({
@@ -439,8 +448,8 @@ app.put('/api/test-results/:id', async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({
-      success: false,
+      res.status(500).json({
+        success: false,
       error: 'Failed to update test result',
       message: error.message
     });
@@ -565,1003 +574,674 @@ const startServer = async () => {
         await db.createUser('Austin');
         console.log('✅ Seeded default user: Austin');
         
-        // Seed all 30 comprehensive test cases
+        // Seed comprehensive user management test cases
         const testData = [
           {
-            id: 'TC-001',
-            title: 'Create Users Across Organizations',
-            story: 'US-001 - Create and manage users across all organizations',
-            category: 'system-admin',
+            id: 'TC-01',
+            title: 'Single User Invite - Basic Flow',
+            story: 'As an Organization Administrator, I can invite a single user by email so that they can access the platform and be assigned to appropriate groups',
+            category: 'org-admin',
             priority: 'High',
-            estimatedTime: '15 minutes',
-            prerequisites: 'System Administrator access, Test organizations available',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Organization Administrator access, Test email addresses available',
             testSteps: JSON.stringify([
-              'Log in as System Administrator',
-              'Navigate to User Management section',
-              'Click "Create New User"',
-              'Enter test user details (email, name, organization)',
-              'Click "Save"',
-              'Verify user is created successfully',
-              'Repeat for different organization'
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Click "Add User" button',
+              'Enter valid email address: testuser@example.com',
+              'Optionally select a group from dropdown',
+              'Click "Submit" button',
+              'Verify confirmation message shows invite status',
+              'Check that user appears in pending invites list'
             ]),
             acceptanceCriteria: JSON.stringify([
-              'User is created successfully',
-              'User appears in user list',
-              'User is associated with correct organization',
-              'User is automatically added to "_All Users_" group',
-              'User can be found by email search'
+              'Modal opens with email input field',
+              'Email validation works correctly',
+              'Confirmation message displays invite status',
+              'User appears in pending invites with correct status',
+              'If group selected, user is assigned to that group upon activation'
             ]),
             statusGuidance: JSON.stringify({
-              pass: 'All acceptance criteria are met and user creation works across organizations',
-              fail: 'Any acceptance criteria fails or user creation does not work',
-              blocked: 'Cannot access user management or test organizations are unavailable',
-              partial: 'User creation works but some acceptance criteria fail (e.g., missing "_All Users_" association)',
+              pass: 'All acceptance criteria are met and single user invite works correctly',
+              fail: 'Any acceptance criteria fails or invite process does not work',
+              blocked: 'Cannot access Users page or Organization Administrator access unavailable',
+              partial: 'Invite works but some acceptance criteria fail (e.g., no confirmation message)',
               skip: 'Test cannot be executed due to environment issues or missing prerequisites'
             })
           },
           {
-            id: 'TC-002',
-            title: 'Manage System-Wide Configurations',
-            story: 'US-002 - Manage system-wide configurations and default roles',
+            id: 'TC-02',
+            title: 'Multi-User Invite from Users Page',
+            story: 'As an Organization Administrator, I can invite multiple users simultaneously using chip-input from the Users page so that I can efficiently onboard multiple team members at once',
+            category: 'org-admin',
+            priority: 'High',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Administrator access, Multiple test email addresses available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Click "Add User" button',
+              'Enter multiple emails via chip-input:',
+              '  - Type user1@example.com and press Enter',
+              '  - Type user2@example.com and press comma',
+              '  - Type user3@example.com and press Enter',
+              'Optionally select groups from dropdown',
+              'Submit invite',
+              'Verify result summary shows per-email outcomes'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Emails convert to chips when Enter or comma pressed',
+              'Each chip supports remove (X) functionality',
+              'Result summary shows counts by outcome type',
+              'All users (new + existing) are members of selected groups'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Multi-user invite with chip-input works correctly and all acceptance criteria are met',
+              fail: 'Chip-input fails or multi-user invite does not work',
+              blocked: 'Cannot access Users page or chip-input functionality unavailable',
+              partial: 'Some emails work but chip-input behavior is inconsistent',
+              skip: 'Multi-user invite functionality not available or test data missing'
+            })
+          },
+          {
+            id: 'TC-03',
+            title: 'Chip-Input Behavior Validation',
+            story: 'As an Organization Administrator, I can invite multiple users simultaneously using chip-input from the Users page so that I can efficiently onboard multiple team members at once',
+            category: 'org-admin',
+            priority: 'Medium',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Administrator access, Multi-user invite functionality available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Click "Add User" button',
+              'Test chip-input behavior:',
+              '  - Type email and press Enter → verify chip creation',
+              '  - Type email and press comma → verify chip creation',
+              '  - Click X on chip → verify chip removal',
+              '  - Enter duplicate emails → verify deduplication',
+              'Submit with valid chips'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Emails convert to chips on Enter/comma',
+              'Chips can be removed with X button',
+              'Duplicate emails are surfaced and deduplicated',
+              'UI remains responsive with up to 100 emails'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'All chip-input behaviors work correctly and UI remains responsive',
+              fail: 'Chip-input behavior fails or UI becomes unresponsive',
+              blocked: 'Chip-input functionality not available',
+              partial: 'Some chip behaviors work but others fail',
+              skip: 'Multi-user invite functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-04',
+            title: 'Email Validation',
+            story: 'As an Organization Administrator, I can invite a single user by email so that they can access the platform and be assigned to appropriate groups',
+            category: 'org-admin',
+            priority: 'Medium',
+            estimatedTime: '5 minutes',
+            prerequisites: 'Organization Administrator access, User invite functionality available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Click "Add User" button',
+              'Enter invalid email: invalid-email',
+              'Attempt to submit',
+              'Enter valid email: valid@example.com',
+              'Submit successfully'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Invalid email is flagged and cannot be submitted',
+              'Real-time validation occurs as user types',
+              'Valid email allows successful submission'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Email validation works correctly for both valid and invalid formats',
+              fail: 'Email validation fails or allows invalid emails',
+              blocked: 'Email validation functionality not available',
+              partial: 'Some validation works but not all cases',
+              skip: 'User invite functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-05',
+            title: 'User Organization Association',
+            story: 'As a System Administrator, I can associate users with one or more organizations via Sustainability Graph APIs so that users can work across different organizational contexts',
             category: 'system-admin',
             priority: 'High',
-            estimatedTime: '10 minutes',
-            prerequisites: 'System Administrator access',
+            estimatedTime: '12 minutes',
+            prerequisites: 'System Administrator access, Sustainability Graph APIs available, Test organizations available',
             testSteps: JSON.stringify([
-              'Log in as System Administrator',
-              'Navigate to System Configuration',
-              'View default roles list',
-              'Verify all 4 default roles exist',
-              'Check that default roles cannot be edited',
-              'Verify role permissions are pre-defined'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'All 4 default roles are visible',
-              'Default roles cannot be edited',
-              'Role permissions are correctly assigned',
-              'System configuration is accessible'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All default roles exist and are properly configured',
-              fail: 'Missing default roles or incorrect permissions',
-              blocked: 'Cannot access system configuration',
-              partial: 'Some default roles missing or configuration issues',
-              skip: 'System configuration not available or access denied'
-            })
-          },
-          {
-            id: 'TC-003',
-            title: 'Create and Manage Users Within Organization',
-            story: 'US-006 - Create and manage users within my organization',
-            category: 'org-admin',
-            priority: 'High',
-            estimatedTime: '20 minutes',
-            prerequisites: 'Organization Administrator access, Test organization available',
-            testSteps: JSON.stringify([
-              'Log in as Organization Administrator',
-              'Navigate to User Management',
-              'Click "Add User to Organization"',
-              'Enter user details (email, name)',
-              'Click "Add User"',
-              'Verify user is added to organization',
-              'Edit user details and save changes',
-              'Verify changes are saved'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'User can be added to organization',
-              'User details can be edited',
-              'Changes are saved successfully',
-              'User appears in organization user list',
-              'Cannot add users to other organizations'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All user management operations work correctly within organization scope',
-              fail: 'User addition/editing fails or works outside organization scope',
-              blocked: 'Cannot access user management or organization not available',
-              partial: 'User addition works but editing fails, or vice versa',
-              skip: 'Organization Administrator access not available or test data missing'
-            })
-          },
-          {
-            id: 'TC-004',
-            title: 'Create and Manage User Groups',
-            story: 'US-007 - Create and manage user groups',
-            category: 'org-admin',
-            priority: 'High',
-            estimatedTime: '15 minutes',
-            prerequisites: 'Organization Administrator access',
-            testSteps: JSON.stringify([
-              'Log in as Organization Administrator',
-              'Navigate to Group Management',
-              'Click "Create New Group"',
-              'Enter group details (name, description)',
-              'Click "Save"',
-              'Verify group is created',
-              'Edit group details',
-              'Save changes and verify group appears in list'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Group can be created successfully',
-              'Group details can be edited',
-              'Group appears in group list',
-              'Group name and description are correct',
-              'Multiple groups can be created'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All group management operations work correctly',
-              fail: 'Group creation/editing fails or data not saved',
-              blocked: 'Cannot access group management',
-              partial: 'Group creation works but editing fails',
-              skip: 'Group management not available or access denied'
-            })
-          },
-          {
-            id: 'TC-005',
-            title: 'Define Hierarchy Access Rules',
-            story: 'US-008 - Define hierarchy access rules for different groups',
-            category: 'org-admin',
-            priority: 'High',
-            estimatedTime: '25 minutes',
-            prerequisites: 'Organization Administrator access, Test groups and hierarchies available',
-            testSteps: JSON.stringify([
-              'Log in as Organization Administrator',
-              'Navigate to Group Management',
-              'Select a test group',
-              'Click "Add Hierarchy Access Rule"',
-              'Configure access rule (hierarchy name, path, permission)',
-              'Click "Save"',
-              'Add another rule with different permission',
-              'Save second rule and verify both rules are saved'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Hierarchy access rules can be created',
-              'Multiple rules can be added to same group',
-              'Grant and Deny permissions work',
-              'Rules are saved correctly',
-              'Rules can be edited or deleted'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All hierarchy access rule operations work correctly',
-              fail: 'Rule creation fails or permissions not applied correctly',
-              blocked: 'Cannot access hierarchy management or test data unavailable',
-              partial: 'Basic rules work but complex scenarios fail',
-              skip: 'Hierarchy management not available or test hierarchies missing'
-            })
-          },
-          {
-            id: 'TC-006',
-            title: 'Create Custom Roles',
-            story: 'US-009 - Create custom roles for specific job functions',
-            category: 'org-admin',
-            priority: 'Medium',
-            estimatedTime: '20 minutes',
-            prerequisites: 'Organization Administrator access',
-            testSteps: JSON.stringify([
-              'Log in as Organization Administrator',
-              'Navigate to Role Management',
-              'Click "Create Custom Role"',
-              'Enter role details (name, description)',
-              'Assign permissions to the role',
-              'Click "Save"',
-              'Verify role is created',
-              'Edit role permissions and save changes'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Custom role can be created',
-              'Permissions can be assigned',
-              'Role appears in role list',
-              'Role permissions can be edited',
-              'Role is organization-specific'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'Custom role creation and management works correctly',
-              fail: 'Role creation fails or permissions not assigned correctly',
-              blocked: 'Cannot access role management',
-              partial: 'Role creation works but permission assignment fails',
-              skip: 'Role management not available or custom roles disabled'
-            })
-          },
-          {
-            id: 'TC-007',
-            title: 'Assign Users to Multiple Groups',
-            story: 'US-010 - Assign users to multiple groups',
-            category: 'org-admin',
-            priority: 'Medium',
-            estimatedTime: '15 minutes',
-            prerequisites: 'Organization Administrator access, Test users and groups available',
-            testSteps: JSON.stringify([
-              'Log in as Organization Administrator',
-              'Navigate to User Management',
-              'Select a test user',
-              'Click "Manage Group Memberships"',
-              'Add user to first group',
-              'Add user to second group',
-              'Save memberships',
-              'Verify user is in both groups',
-              'Remove user from one group',
-              'Save changes and verify user is only in remaining group'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'User can be added to multiple groups',
-              'User can be removed from groups',
-              'Group memberships are saved correctly',
-              'User\'s group list updates correctly',
-              'Multiple group operations work'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All group membership operations work correctly',
-              fail: 'Group assignment/removal fails or not saved',
-              blocked: 'Cannot access group membership management',
-              partial: 'Adding works but removing fails, or vice versa',
-              skip: 'Group membership management not available or test data missing'
-            })
-          },
-          {
-            id: 'TC-008',
-            title: 'Deactivate Users',
-            story: 'US-011 - Deactivate users who leave the organization',
-            category: 'org-admin',
-            priority: 'High',
-            estimatedTime: '10 minutes',
-            prerequisites: 'Organization Administrator access, Test users available',
-            testSteps: JSON.stringify([
-              'Log in as Organization Administrator',
-              'Navigate to User Management',
-              'Select a test user',
-              'Click "Deactivate User"',
-              'Confirm deactivation',
-              'Verify user status changes to "Inactive"',
-              'Verify user cannot log in',
-              'Reactivate user',
-              'Verify user status changes to "Active"'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'User can be deactivated',
-              'User status changes correctly',
-              'Deactivated user cannot access system',
-              'User can be reactivated',
-              'Status changes are saved'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All user activation/deactivation operations work correctly',
-              fail: 'Deactivation fails or user still has access',
-              blocked: 'Cannot access user management or test users unavailable',
-              partial: 'Deactivation works but reactivation fails',
-              skip: 'User management not available or deactivation feature disabled'
-            })
-          },
-          {
-            id: 'TC-009',
-            title: 'View Group Memberships and Roles',
-            story: 'US-012 - See which groups I belong to and what roles I have',
-            category: 'org-member',
-            priority: 'Medium',
-            estimatedTime: '10 minutes',
-            prerequisites: 'Organization Member access, User assigned to groups and roles',
-            testSteps: JSON.stringify([
-              'Log in as Organization Member',
-              'Navigate to "My Profile" or "My Access"',
-              'View "Group Memberships" section',
-              'Verify all assigned groups are listed',
-              'View "Role Assignments" section',
-              'Verify all assigned roles are listed',
-              'Check that permissions are visible',
-              'Verify information is accurate and up-to-date'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'All group memberships are displayed',
-              'All role assignments are shown',
-              'Permissions are clearly visible',
-              'Information is accurate and current',
-              'Interface is user-friendly'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All membership and role information is displayed correctly',
-              fail: 'Missing groups/roles or incorrect information displayed',
-              blocked: 'Cannot access profile/access information',
-              partial: 'Some information displayed but missing or incorrect',
-              skip: 'Profile/access information not available or user not assigned to groups/roles'
-            })
-          },
-          {
-            id: 'TC-010',
-            title: 'Request Group Membership',
-            story: 'US-013 - Request to join groups I need access to',
-            category: 'org-member',
-            priority: 'Medium',
-            estimatedTime: '15 minutes',
-            prerequisites: 'Organization Member access, Groups available for joining',
-            testSteps: JSON.stringify([
-              'Log in as Organization Member',
-              'Navigate to "Available Groups" or "Group Requests"',
-              'Browse available groups',
-              'Select a group to join',
-              'Click "Request Membership"',
-              'Add justification for request',
-              'Submit request',
-              'Verify request is submitted',
-              'Check request status'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Available groups are listed',
-              'Group request can be submitted',
-              'Justification can be added',
-              'Request status can be tracked',
-              'Request is sent to appropriate approver'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'Group request process works correctly',
-              fail: 'Request submission fails or not processed',
-              blocked: 'Cannot access group request functionality',
-              partial: 'Request can be submitted but status tracking fails',
-              skip: 'Group request functionality not available or no groups available'
-            })
-          },
-          {
-            id: 'TC-011',
-            title: 'View Organization Hierarchy',
-            story: 'US-014 - See the organization structure and my place in it',
-            category: 'org-member',
-            priority: 'Low',
-            estimatedTime: '8 minutes',
-            prerequisites: 'Organization Member access, Organization hierarchy configured',
-            testSteps: JSON.stringify([
-              'Log in as Organization Member',
-              'Navigate to "Organization" or "Hierarchy" section',
-              'View organization structure',
-              'Locate your position in hierarchy',
-              'Expand/collapse hierarchy levels',
-              'Verify hierarchy information is accurate',
-              'Check if you can see relevant organizational details'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Organization hierarchy is displayed',
-              'User\'s position is clearly shown',
-              'Hierarchy can be navigated',
-              'Information is accurate',
-              'Display is clear and understandable'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'Organization hierarchy is displayed correctly with user\'s position',
-              fail: 'Hierarchy not displayed or user position unclear',
-              blocked: 'Cannot access organization information',
-              partial: 'Hierarchy displayed but user position not clear',
-              skip: 'Organization hierarchy not available or not configured'
-            })
-          },
-          {
-            id: 'TC-012',
-            title: 'Update Personal Information',
-            story: 'US-015 - Update my personal information and preferences',
-            category: 'org-member',
-            priority: 'Low',
-            estimatedTime: '10 minutes',
-            prerequisites: 'Organization Member access',
-            testSteps: JSON.stringify([
-              'Log in as Organization Member',
-              'Navigate to "My Profile" or "Personal Settings"',
-              'Update personal information (name, email, phone)',
-              'Save changes',
-              'Verify information is updated',
-              'Update preferences (notifications, language)',
-              'Save preference changes',
-              'Verify preferences are saved'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Personal information can be updated',
-              'Changes are saved successfully',
-              'Updated information is displayed',
-              'Preferences can be modified',
-              'All changes persist after logout/login'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All personal information and preference updates work correctly',
-              fail: 'Updates fail or changes not saved',
-              blocked: 'Cannot access profile/settings',
-              partial: 'Some updates work but others fail',
-              skip: 'Profile/settings functionality not available'
-            })
-          },
-          {
-            id: 'TC-013',
-            title: 'HR User Management',
-            story: 'US-016 - Manage users for HR purposes',
-            category: 'hr-admin',
-            priority: 'High',
-            estimatedTime: '25 minutes',
-            prerequisites: 'HR Administrator access, Test users available',
-            testSteps: JSON.stringify([
-              'Log in as HR Administrator',
-              'Navigate to HR User Management',
-              'View user list with HR-specific information',
-              'Update user employment status',
-              'Modify user organizational assignments',
-              'Update user role assignments',
-              'Save changes',
-              'Verify HR-specific information is updated'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'HR-specific user information is accessible',
-              'Employment status can be updated',
-              'Organizational assignments can be modified',
-              'Role assignments can be changed',
-              'Changes are saved and reflected correctly'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All HR user management operations work correctly',
-              fail: 'HR operations fail or information not updated',
-              blocked: 'Cannot access HR user management',
-              partial: 'Some HR operations work but others fail',
-              skip: 'HR user management not available or HR Administrator access not granted'
-            })
-          },
-          {
-            id: 'TC-014',
-            title: 'Bulk HR Operations',
-            story: 'US-017 - Perform bulk operations on multiple users',
-            category: 'hr-admin',
-            priority: 'Medium',
-            estimatedTime: '20 minutes',
-            prerequisites: 'HR Administrator access, Multiple test users available',
-            testSteps: JSON.stringify([
-              'Log in as HR Administrator',
-              'Navigate to HR User Management',
-              'Select multiple users',
-              'Choose bulk operation (status change, role assignment)',
-              'Configure bulk operation parameters',
-              'Execute bulk operation',
-              'Verify all selected users are affected',
-              'Check operation results and logs'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Multiple users can be selected',
-              'Bulk operations are available',
-              'All selected users are processed',
-              'Operation results are accurate',
-              'Bulk operation logs are generated'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All bulk HR operations work correctly',
-              fail: 'Bulk operations fail or partial processing',
-              blocked: 'Cannot access bulk HR operations',
-              partial: 'Some bulk operations work but others fail',
-              skip: 'Bulk HR operations not available or insufficient test users'
-            })
-          },
-          {
-            id: 'TC-015',
-            title: 'HR Reporting and Analytics',
-            story: 'US-018 - Generate HR reports and view user analytics',
-            category: 'hr-admin',
-            priority: 'Medium',
-            estimatedTime: '15 minutes',
-            prerequisites: 'HR Administrator access, User data available for reporting',
-            testSteps: JSON.stringify([
-              'Log in as HR Administrator',
-              'Navigate to HR Reports section',
-              'Select report type (user count, role distribution, etc.)',
-              'Configure report parameters',
-              'Generate report',
-              'View report results',
-              'Export report if available',
-              'Verify report accuracy'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Reports can be generated',
-              'Report parameters can be configured',
-              'Report results are accurate',
-              'Reports can be exported',
-              'Report data is up-to-date'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All HR reporting functionality works correctly',
-              fail: 'Report generation fails or inaccurate results',
-              blocked: 'Cannot access HR reporting',
-              partial: 'Some reports work but others fail or inaccurate',
-              skip: 'HR reporting not available or insufficient data for reports'
-            })
-          },
-          {
-            id: 'TC-016',
-            title: 'End User Basic Operations',
-            story: 'US-019 - Perform basic operations as end user',
-            category: 'end-user',
-            priority: 'Medium',
-            estimatedTime: '15 minutes',
-            prerequisites: 'End User access, Basic functionality available',
-            testSteps: JSON.stringify([
-              'Log in as End User',
-              'Navigate to main dashboard',
-              'View available features and options',
-              'Access user profile',
-              'View assigned groups and roles',
-              'Test basic functionality access',
-              'Verify user can perform allowed operations',
-              'Check that restricted operations are blocked'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Dashboard is accessible',
-              'Profile information is viewable',
-              'Assigned groups and roles are visible',
-              'Allowed operations work correctly',
-              'Restricted operations are properly blocked'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All end user operations work correctly with proper access control',
-              fail: 'Operations fail or access control not working',
-              blocked: 'Cannot access end user functionality',
-              partial: 'Some operations work but access control issues',
-              skip: 'End user functionality not available or access not granted'
-            })
-          },
-          {
-            id: 'TC-017',
-            title: 'Cross-Organization User Management',
-            story: 'US-020 - Manage users across multiple organizations',
-            category: 'cross-role',
-            priority: 'High',
-            estimatedTime: '30 minutes',
-            prerequisites: 'Cross-role access, Multiple organizations available',
-            testSteps: JSON.stringify([
-              'Log in with cross-role access',
-              'Navigate to Cross-Organization Management',
-              'View users across organizations',
-              'Create user in Organization A',
-              'Assign same user to Organization B',
-              'Verify user appears in both organizations',
-              'Test cross-organization operations',
-              'Verify proper access control'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Cross-organization user view works',
-              'Users can be created across organizations',
-              'Users can be assigned to multiple organizations',
-              'Cross-organization operations work',
-              'Access control is properly enforced'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All cross-organization operations work correctly',
-              fail: 'Cross-organization operations fail or access control issues',
-              blocked: 'Cannot access cross-organization functionality',
-              partial: 'Some cross-organization operations work but others fail',
-              skip: 'Cross-organization functionality not available or multiple organizations not configured'
-            })
-          },
-          {
-            id: 'TC-018',
-            title: 'Role-Based Access Control Integration',
-            story: 'US-021 - Test integration between different role types',
-            category: 'integration',
-            priority: 'High',
-            estimatedTime: '25 minutes',
-            prerequisites: 'Multiple role types available, Integration features enabled',
-            testSteps: JSON.stringify([
-              'Test System Admin role integration',
-              'Test Organization Admin role integration',
-              'Test HR Admin role integration',
-              'Test cross-role interactions',
-              'Verify role permissions work together',
-              'Test role escalation scenarios',
-              'Verify role conflicts are handled',
-              'Check integration with external systems'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'All role types integrate properly',
-              'Role permissions work together',
-              'Role escalation works correctly',
-              'Role conflicts are resolved properly',
-              'External system integration works'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All role integrations work correctly',
-              fail: 'Role integration fails or conflicts not resolved',
-              blocked: 'Cannot test role integration',
-              partial: 'Some role integrations work but others fail',
-              skip: 'Role integration not available or insufficient role types'
-            })
-          },
-          {
-            id: 'TC-019',
-            title: 'API Integration Testing',
-            story: 'US-022 - Test API endpoints and external integrations',
-            category: 'integration',
-            priority: 'Medium',
-            estimatedTime: '20 minutes',
-            prerequisites: 'API access, External systems available',
-            testSteps: JSON.stringify([
-              'Test user creation API',
-              'Test user update API',
-              'Test group management API',
-              'Test role assignment API',
-              'Test authentication API',
-              'Verify API responses',
-              'Test error handling',
-              'Check API documentation accuracy'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'All API endpoints respond correctly',
-              'API responses are properly formatted',
-              'Error handling works correctly',
-              'API documentation is accurate',
-              'External integrations work'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All API endpoints and integrations work correctly',
-              fail: 'API endpoints fail or integrations broken',
-              blocked: 'Cannot access API or external systems',
-              partial: 'Some API endpoints work but others fail',
-              skip: 'API testing not available or external systems unavailable'
-            })
-          },
-          {
-            id: 'TC-020',
-            title: 'System Performance Under Load',
-            story: 'US-023 - Test system performance with multiple users',
-            category: 'performance',
-            priority: 'Medium',
-            estimatedTime: '30 minutes',
-            prerequisites: 'Multiple test users, Performance testing tools',
-            testSteps: JSON.stringify([
-              'Create multiple test users',
-              'Simulate concurrent user logins',
-              'Test user creation under load',
-              'Test group operations under load',
-              'Monitor system performance',
-              'Test database performance',
-              'Check memory usage',
-              'Verify response times'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'System handles concurrent users',
-              'Response times are acceptable',
-              'Database performance is good',
-              'Memory usage is reasonable',
-              'No system crashes or errors'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'System performs well under load',
-              fail: 'Performance issues or system failures under load',
-              blocked: 'Cannot perform load testing',
-              partial: 'Some performance tests pass but others fail',
-              skip: 'Performance testing not available or insufficient test users'
-            })
-          },
-          {
-            id: 'TC-021',
-            title: 'Security Authentication Testing',
-            story: 'US-024 - Test authentication and security features',
-            category: 'security',
-            priority: 'High',
-            estimatedTime: '20 minutes',
-            prerequisites: 'Security features enabled, Test accounts available',
-            testSteps: JSON.stringify([
-              'Test valid user login',
-              'Test invalid password login',
-              'Test account lockout after failed attempts',
-              'Test password complexity requirements',
-              'Test session timeout',
-              'Test secure logout',
-              'Test password reset functionality',
-              'Verify security logs'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Valid logins work correctly',
-              'Invalid logins are rejected',
-              'Account lockout works',
-              'Password requirements are enforced',
-              'Session management works',
-              'Security logs are generated'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All security features work correctly',
-              fail: 'Security features fail or bypassed',
-              blocked: 'Cannot test security features',
-              partial: 'Some security features work but others fail',
-              skip: 'Security testing not available or features disabled'
-            })
-          },
-          {
-            id: 'TC-022',
-            title: 'Authorization and Permission Testing',
-            story: 'US-025 - Test authorization and permission enforcement',
-            category: 'security',
-            priority: 'High',
-            estimatedTime: '25 minutes',
-            prerequisites: 'Multiple role types, Protected resources available',
-            testSteps: JSON.stringify([
-              'Test System Admin permissions',
-              'Test Organization Admin permissions',
-              'Test HR Admin permissions',
-              'Test Organization Member permissions',
-              'Test End User permissions',
-              'Verify permission boundaries',
-              'Test unauthorized access attempts',
-              'Check permission escalation'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'All role permissions work correctly',
-              'Permission boundaries are enforced',
-              'Unauthorized access is blocked',
-              'Permission escalation is prevented',
-              'Access control is consistent'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All authorization and permission enforcement works correctly',
-              fail: 'Authorization fails or permissions not enforced',
-              blocked: 'Cannot test authorization',
-              partial: 'Some permissions work but others fail',
-              skip: 'Authorization testing not available or insufficient role types'
-            })
-          },
-          {
-            id: 'TC-023',
-            title: 'Data Encryption and Privacy',
-            story: 'US-026 - Test data encryption and privacy features',
-            category: 'security',
-            priority: 'Medium',
-            estimatedTime: '15 minutes',
-            prerequisites: 'Encryption features enabled, Sensitive data available',
-            testSteps: JSON.stringify([
-              'Test data encryption at rest',
-              'Test data encryption in transit',
-              'Test sensitive data masking',
-              'Test data anonymization',
-              'Verify encryption keys management',
-              'Test data backup encryption',
-              'Check privacy compliance',
-              'Verify data retention policies'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Data is encrypted at rest',
-              'Data is encrypted in transit',
-              'Sensitive data is properly masked',
-              'Encryption keys are managed securely',
-              'Privacy compliance is maintained'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All encryption and privacy features work correctly',
-              fail: 'Encryption fails or privacy not maintained',
-              blocked: 'Cannot test encryption/privacy features',
-              partial: 'Some encryption/privacy features work but others fail',
-              skip: 'Encryption/privacy testing not available or features disabled'
-            })
-          },
-          {
-            id: 'TC-024',
-            title: 'Advanced Group Management',
-            story: 'US-027 - Test advanced group management features',
-            category: 'advanced',
-            priority: 'Medium',
-            estimatedTime: '25 minutes',
-            prerequisites: 'Advanced group features enabled, Complex group structures available',
-            testSteps: JSON.stringify([
-              'Create nested group structures',
-              'Test group inheritance',
-              'Test group-based workflows',
-              'Test group automation rules',
-              'Test group synchronization',
-              'Test group conflict resolution',
-              'Test group migration',
-              'Verify group audit trails'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Nested groups work correctly',
-              'Group inheritance functions properly',
-              'Group workflows execute correctly',
-              'Automation rules work',
-              'Group synchronization is accurate',
-              'Audit trails are complete'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All advanced group management features work correctly',
-              fail: 'Advanced group features fail or not working',
-              blocked: 'Cannot access advanced group features',
-              partial: 'Some advanced features work but others fail',
-              skip: 'Advanced group management not available or features disabled'
-            })
-          },
-          {
-            id: 'TC-025',
-            title: 'Workflow Automation Testing',
-            story: 'US-028 - Test automated workflows and business rules',
-            category: 'advanced',
-            priority: 'Medium',
-            estimatedTime: '30 minutes',
-            prerequisites: 'Workflow automation enabled, Business rules configured',
-            testSteps: JSON.stringify([
-              'Test user onboarding workflow',
-              'Test role assignment automation',
-              'Test group membership workflows',
-              'Test approval workflows',
-              'Test notification workflows',
-              'Test escalation procedures',
-              'Test workflow error handling',
-              'Verify workflow audit logs'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Workflows execute automatically',
-              'Business rules are enforced',
-              'Approval processes work',
-              'Notifications are sent',
-              'Escalation procedures function',
-              'Error handling works',
-              'Audit logs are generated'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All workflow automation works correctly',
-              fail: 'Workflows fail or automation not working',
-              blocked: 'Cannot test workflow automation',
-              partial: 'Some workflows work but others fail',
-              skip: 'Workflow automation not available or not configured'
-            })
-          },
-          {
-            id: 'TC-026',
-            title: 'Audit Trail and Compliance',
-            story: 'US-029 - Test audit trails and compliance reporting',
-            category: 'advanced',
-            priority: 'High',
-            estimatedTime: '20 minutes',
-            prerequisites: 'Audit logging enabled, Compliance features available',
-            testSteps: JSON.stringify([
-              'Perform various user operations',
-              'Check audit trail generation',
-              'Test audit log search',
-              'Test compliance reporting',
-              'Test data retention policies',
-              'Test audit log export',
-              'Verify audit log integrity',
-              'Test compliance dashboard'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'All operations are logged',
-              'Audit logs are searchable',
-              'Compliance reports are accurate',
-              'Data retention policies work',
-              'Audit logs can be exported',
-              'Log integrity is maintained'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All audit and compliance features work correctly',
-              fail: 'Audit logging fails or compliance issues',
-              blocked: 'Cannot test audit/compliance features',
-              partial: 'Some audit/compliance features work but others fail',
-              skip: 'Audit/compliance testing not available or features disabled'
-            })
-          },
-          {
-            id: 'TC-027',
-            title: 'Multi-Tenant Architecture Testing',
-            story: 'US-030 - Test multi-tenant architecture and data isolation',
-            category: 'advanced',
-            priority: 'High',
-            estimatedTime: '35 minutes',
-            prerequisites: 'Multi-tenant architecture, Multiple tenants available',
-            testSteps: JSON.stringify([
-              'Test tenant data isolation',
-              'Test cross-tenant access prevention',
-              'Test tenant-specific configurations',
-              'Test tenant resource allocation',
-              'Test tenant migration',
-              'Test tenant backup/restore',
-              'Test tenant monitoring',
-              'Verify tenant security boundaries'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Tenant data is properly isolated',
-              'Cross-tenant access is prevented',
-              'Tenant configurations work',
-              'Resource allocation is correct',
-              'Tenant migration works',
-              'Security boundaries are maintained'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All multi-tenant features work correctly',
-              fail: 'Multi-tenant architecture fails or data isolation issues',
-              blocked: 'Cannot test multi-tenant features',
-              partial: 'Some multi-tenant features work but others fail',
-              skip: 'Multi-tenant architecture not available or insufficient tenants'
-            })
-          },
-          {
-            id: 'TC-028',
-            title: 'Disaster Recovery Testing',
-            story: 'US-031 - Test disaster recovery and backup procedures',
-            category: 'advanced',
-            priority: 'High',
-            estimatedTime: '40 minutes',
-            prerequisites: 'Backup systems available, Disaster recovery procedures configured',
-            testSteps: JSON.stringify([
-              'Test data backup procedures',
-              'Test backup restoration',
-              'Test system failover',
-              'Test data replication',
-              'Test recovery time objectives',
-              'Test recovery point objectives',
-              'Test disaster recovery procedures',
-              'Verify data integrity after recovery'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Backups are created successfully',
-              'Restoration works correctly',
-              'Failover procedures function',
-              'Data replication is accurate',
-              'Recovery objectives are met',
-              'Data integrity is maintained'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'All disaster recovery procedures work correctly',
-              fail: 'Disaster recovery fails or procedures not working',
-              blocked: 'Cannot test disaster recovery',
-              partial: 'Some disaster recovery procedures work but others fail',
-              skip: 'Disaster recovery testing not available or procedures not configured'
-            })
-          },
-          {
-            id: 'TC-029',
-            title: 'Group-Based Authorization Testing',
-            story: 'ADR Compliance - Test authorization based on group membership',
-            category: 'adr-compliance',
-            priority: 'High',
-            estimatedTime: '25 minutes',
-            prerequisites: 'Group-based authorization enabled, Protected resources available',
-            testSteps: JSON.stringify([
-              'Create user without group memberships',
-              'Attempt to access protected resources',
-              'Verify access is denied',
-              'Add user to group with appropriate permissions',
-              'Attempt to access same resources',
-              'Verify access is granted',
-              'Remove user from group',
-              'Attempt to access resources again',
-              'Verify access is denied'
-            ]),
-            acceptanceCriteria: JSON.stringify([
-              'Users without group memberships are denied access',
-              'Group membership grants appropriate access',
-              'Removing group membership revokes access',
-              'Authorization decisions are based on group membership',
-              'Access control works correctly'
-            ]),
-            statusGuidance: JSON.stringify({
-              pass: 'Group-based authorization works correctly per ADR specification',
-              fail: 'Authorization not based on group membership or access control fails',
-              blocked: 'Cannot test authorization or protected resources unavailable',
-              partial: 'Basic authorization works but group membership changes not reflected',
-              skip: 'Authorization testing not available or group-based access control not implemented'
-            })
-          },
-          {
-            id: 'TC-030',
-            title: 'Cross-Organization User Association',
-            story: 'ADR Compliance - Test users can be associated with multiple organizations',
-            category: 'adr-compliance',
-            priority: 'High',
-            estimatedTime: '15 minutes',
-            prerequisites: 'System Administrator access, Multiple test organizations available',
-            testSteps: JSON.stringify([
-              'Log in as System Administrator',
-              'Create user',
-              'Associate user with Organization A',
-              'Associate same user with Organization B',
-              'Verify user appears in both organizations',
-              'Test user can switch between organizations',
-              'Verify user\'s groups and roles are organization-specific',
-              'Test user access in each organization context'
+              'Login as System Administrator',
+              'Use Sustainability Graph APIs to associate user with organizations',
+              'Verify user can work on behalf of one organization at a time',
+              'Test organization context switching',
+              'Verify users are associated by default to "_All Users_" node'
             ]),
             acceptanceCriteria: JSON.stringify([
               'User can be associated with multiple organizations',
-              'User appears in both organization user lists',
-              'User can switch between organizations',
-              'Groups and roles are organization-specific',
-              'Access is properly scoped per organization'
+              'Vertex token contains correct organization context',
+              'Organization switching works within 500ms',
+              'Users are associated to "_All Users_" node by default'
             ]),
             statusGuidance: JSON.stringify({
-              pass: 'Cross-organization user association works correctly per ADR specification',
-              fail: 'Users cannot be associated with multiple organizations or scoping fails',
-              blocked: 'Cannot access user management or multiple organizations unavailable',
-              partial: 'User association works but organization scoping fails',
-              skip: 'Multi-organization support not available or cross-organization association not implemented'
+              pass: 'User organization association works correctly across all acceptance criteria',
+              fail: 'Organization association fails or context switching does not work',
+              blocked: 'Sustainability Graph APIs unavailable or System Administrator access denied',
+              partial: 'Basic association works but context switching fails',
+              skip: 'Organization management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-06',
+            title: 'User Status Management',
+            story: 'As an Organization Administrator, I can deactivate and reactivate users so that I can manage user access without losing their historical data',
+            category: 'org-admin',
+            priority: 'Medium',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Administrator access, Active test users available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Find active user',
+              'Deactivate user',
+              'Verify user loses access',
+              'Reactivate user',
+              'Verify access is restored with previous group memberships'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'User loses access when deactivated',
+              'Historical data is preserved',
+              'Access is restored when reactivated',
+              'Previous group memberships remain intact'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'User status management works correctly and data is preserved',
+              fail: 'Status changes fail or data is lost during deactivation/reactivation',
+              blocked: 'User status management functionality not available',
+              partial: 'Basic status changes work but data preservation issues',
+              skip: 'User management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-07',
+            title: 'Effective Access Preview',
+            story: 'As an Organization Administrator, I can preview any user\'s effective capabilities and scope so that I can understand their current access before making changes',
+            category: 'org-admin',
+            priority: 'Medium',
+            estimatedTime: '6 minutes',
+            prerequisites: 'Organization Administrator access, Users with group memberships available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Find user with group memberships',
+              'Click "View Effective Access" action',
+              'Verify preview loads within 2 seconds',
+              'Check that preview shows groups → roles → capabilities + resolved scope'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Preview loads within 2 seconds (p95)',
+              'Shows read-only view of effective access',
+              'Displays groups, roles, capabilities, and resolved scope',
+              'Preview is comprehensive and accurate'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Effective access preview works correctly and loads within SLA',
+              fail: 'Preview fails to load or shows incorrect information',
+              blocked: 'Effective access preview functionality not available',
+              partial: 'Preview loads but information is incomplete or inaccurate',
+              skip: 'Access preview functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-08',
+            title: 'Default Role Visibility',
+            story: 'As a System Administrator, I can see and manage the four default roles (System Administrator, Organization Administrator, Organization Manager, Organization Member) so that I can ensure proper access control across the platform',
+            category: 'system-admin',
+            priority: 'High',
+            estimatedTime: '8 minutes',
+            prerequisites: 'System Administrator access, Roles page accessible',
+            testSteps: JSON.stringify([
+              'Login as System Administrator',
+              'Navigate to Roles page',
+              'Verify four default roles are visible:',
+              '  - System Administrator',
+              '  - Organization Administrator',
+              '  - Organization Manager',
+              '  - Organization Member',
+              'Check that roles have clear descriptions',
+              'Verify default roles cannot be edited'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'All four default roles are visible',
+              'Clear descriptions of capabilities are shown',
+              'Default roles cannot be edited',
+              'Permission matrix is displayed correctly'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'All default roles are visible and properly configured',
+              fail: 'Default roles missing or incorrectly configured',
+              blocked: 'Cannot access Roles page or System Administrator access denied',
+              partial: 'Some default roles visible but others missing or misconfigured',
+              skip: 'Role management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-09',
+            title: 'Default Permission Matrix Validation',
+            story: 'As a System Administrator, I can see and manage the four default roles (System Administrator, Organization Administrator, Organization Manager, Organization Member) so that I can ensure proper access control across the platform',
+            category: 'system-admin',
+            priority: 'High',
+            estimatedTime: '15 minutes',
+            prerequisites: 'System Administrator access, Permission matrix visible',
+            testSteps: JSON.stringify([
+              'Login as System Administrator',
+              'Navigate to Roles page',
+              'Review permission matrix for each default role',
+              'Verify Entity Management permissions:',
+              '  - System Administrator: All permissions ✓',
+              '  - Organization Administrator: All permissions ✓',
+              '  - Organization Manager: Edit ✓, Create ✗, View ✓, Delete ✗',
+              '  - Organization Member: View ✓, others ✗',
+              'Verify Hierarchy Management permissions',
+              'Verify Organization Management permissions',
+              'Verify Role Management permissions',
+              'Verify User Group Management permissions',
+              'Verify User Management permissions'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Permission matrix matches PRD specifications exactly',
+              'Each role has correct permissions for each management area',
+              'Visual indicators (✓/✗) are accurate',
+              'Permission descriptions are clear'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Permission matrix is accurate and matches PRD specifications',
+              fail: 'Permission matrix incorrect or does not match PRD',
+              blocked: 'Permission matrix not visible or accessible',
+              partial: 'Some permissions correct but others incorrect',
+              skip: 'Permission matrix functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-10',
+            title: 'Custom Role Creation',
+            story: 'As an Organization Administrator, I can create custom roles by selecting capabilities from platform and application areas so that I can tailor access to my organization\'s specific needs',
+            category: 'org-admin',
+            priority: 'High',
+            estimatedTime: '12 minutes',
+            prerequisites: 'Organization Administrator access, Custom role creation functionality available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Roles page',
+              'Click "Create Custom Role"',
+              'Enter role name and description',
+              'Select capabilities from platform areas',
+              'Select capabilities from application areas',
+              'Save role',
+              'Verify role is created and can be assigned to groups'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Role is created successfully',
+              'Role reflects organization\'s specific job functions',
+              'Role can be assigned to groups',
+              'Role appears in roles catalog'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Custom role creation works correctly and role can be used',
+              fail: 'Custom role creation fails or role cannot be assigned',
+              blocked: 'Custom role creation functionality not available',
+              partial: 'Role created but cannot be assigned or has issues',
+              skip: 'Custom role functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-11',
+            title: 'Permission Assignment',
+            story: 'As an Organization Administrator, I can assign application-defined permissions to roles so that I can control what actions each role can perform',
+            category: 'org-admin',
+            priority: 'Medium',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Organization Administrator access, Custom roles available, Application permissions defined',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Roles page',
+              'Create or edit custom role',
+              'Assign application-defined permissions to role',
+              'Save role',
+              'Verify permissions define what actions role can perform',
+              'Test that permissions are not editable by users'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Permissions are assigned successfully',
+              'Permissions define role actions correctly',
+              'Permissions are managed by application teams',
+              'Users cannot edit permissions'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Permission assignment works correctly and permissions are properly managed',
+              fail: 'Permission assignment fails or permissions can be edited by users',
+              blocked: 'Permission assignment functionality not available',
+              partial: 'Basic assignment works but permission management issues',
+              skip: 'Permission management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-12',
+            title: 'Group Creation',
+            story: 'As an Organization Administrator, I can create and edit groups with names, descriptions, assigned roles, hierarchy scopes, and members so that I can organize users with appropriate access',
+            category: 'org-admin',
+            priority: 'High',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Administrator access, Groups page accessible, Roles available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Groups page',
+              'Click "Create Group"',
+              'Enter group name and description',
+              'Assign roles to group',
+              'Define hierarchy scopes',
+              'Add members to group',
+              'Save group',
+              'Verify group is created and can be used for access control'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Group is created successfully',
+              'All fields are saved correctly',
+              'Group can be used for access control',
+              'Group appears in groups list'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Group creation works correctly and all fields are saved properly',
+              fail: 'Group creation fails or fields are not saved correctly',
+              blocked: 'Group creation functionality not available',
+              partial: 'Group created but some fields missing or incorrect',
+              skip: 'Group management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-13',
+            title: 'Group Member Management',
+            story: 'As an Organization Administrator, I can add and remove users from groups so that I can maintain proper group membership',
+            category: 'org-admin',
+            priority: 'High',
+            estimatedTime: '12 minutes',
+            prerequisites: 'Organization Administrator access, Existing groups available, Test users available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Groups page',
+              'Edit existing group',
+              'Add users to group using searchable table',
+              'Remove users from group',
+              'Save changes',
+              'Verify membership changes are applied',
+              'Test duplicate membership prevention'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Users can be added to groups',
+              'Users can be removed from groups',
+              'Duplicate memberships are prevented',
+              'Searchable table supports efficient management',
+              'Changes are applied immediately'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Group member management works correctly and efficiently',
+              fail: 'Member management fails or duplicate memberships allowed',
+              blocked: 'Group member management functionality not available',
+              partial: 'Basic member management works but efficiency issues',
+              skip: 'Group member management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-14',
+            title: 'Hierarchy Access Parameters',
+            story: 'As an Organization Administrator, I can define hierarchy access using Hierarchy Name, Path, and Permission parameters so that I can control where users can perform actions',
+            category: 'org-admin',
+            priority: 'High',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Administrator access, Groups page accessible, Hierarchy data available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Groups page',
+              'Create or edit group',
+              'Define hierarchy access:',
+              '  - Set Hierarchy Name (specific or wildcard *)',
+              '  - Set Path (specific path or wildcard *)',
+              '  - Set Permission (grant/deny)',
+              'Save group',
+              'Verify access is granted/denied to entire subgraph',
+              'Test wildcard constraints'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Access is granted/denied to entire subgraph starting at final node',
+              'Wildcard * applies to entire hierarchy',
+              'If hierarchy name is *, path must also be *',
+              'Access patterns are consistent'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Hierarchy access parameters work correctly and constraints are enforced',
+              fail: 'Hierarchy access fails or constraints not enforced',
+              blocked: 'Hierarchy access functionality not available',
+              partial: 'Basic hierarchy access works but constraint issues',
+              skip: 'Hierarchy access functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-15',
+            title: 'Hierarchy Scope Picker',
+            story: 'As an Organization Administrator, I can use a scope picker to browse, search, and multi-select hierarchy nodes with "include descendants" toggle so that I can efficiently define access scopes',
+            category: 'org-admin',
+            priority: 'Medium',
+            estimatedTime: '12 minutes',
+            prerequisites: 'Organization Administrator access, Scope picker functionality available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Groups page',
+              'Create or edit group',
+              'Use scope picker to define hierarchy access:',
+              '  - Browse hierarchy nodes',
+              '  - Search for specific nodes',
+              '  - Multi-select nodes',
+              '  - Toggle "include descendants"',
+              'Verify picker responds within 300ms',
+              'Save group'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Scope picker allows browsing hierarchy',
+              'Search functionality works correctly',
+              'Multi-select is supported',
+              '"Include descendants" toggle works',
+              'Picker responds within 300ms'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Scope picker works correctly and meets performance requirements',
+              fail: 'Scope picker fails or performance requirements not met',
+              blocked: 'Scope picker functionality not available',
+              partial: 'Basic picker works but performance or functionality issues',
+              skip: 'Scope picker functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-16',
+            title: 'EIM Authentication',
+            story: 'As a User, I can authenticate via Schneider Electric EIM so that I can securely access the platform using my corporate credentials',
+            category: 'integration',
+            priority: 'High',
+            estimatedTime: '8 minutes',
+            prerequisites: 'EIM integration configured, Valid EIM credentials available',
+            testSteps: JSON.stringify([
+              'Navigate to platform login page',
+              'Click "Login with EIM" or similar',
+              'Enter Schneider Electric EIM credentials',
+              'Complete EIM authentication flow',
+              'Verify successful login to platform',
+              'Test authentication integration'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'EIM authentication works seamlessly',
+              'User can access platform with corporate credentials',
+              'Authentication integrates properly with platform',
+              'Login process is smooth'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'EIM authentication works seamlessly and integrates properly',
+              fail: 'EIM authentication fails or integration issues',
+              blocked: 'EIM integration not configured or credentials unavailable',
+              partial: 'Basic authentication works but integration issues',
+              skip: 'EIM integration not implemented'
+            })
+          },
+          {
+            id: 'TC-17',
+            title: 'Vertex Token Generation',
+            story: 'As a User, I can receive a Vertex token with my organization context and permissions so that I can access platform resources with appropriate authorization',
+            category: 'integration',
+            priority: 'High',
+            estimatedTime: '6 minutes',
+            prerequisites: 'Authenticated user, Vertex token service available',
+            testSteps: JSON.stringify([
+              'Login as authenticated user',
+              'Access platform resources',
+              'Verify Vertex token is generated',
+              'Check token contains organization context',
+              'Verify token contains user permissions',
+              'Test token is used for authorization decisions'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Vertex token is generated automatically',
+              'Token contains organization context',
+              'Token contains user permissions',
+              'Token is used for all authorization decisions'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Vertex token generation works correctly and contains all required information',
+              fail: 'Token generation fails or missing required information',
+              blocked: 'Vertex token service unavailable',
+              partial: 'Token generated but missing some information',
+              skip: 'Vertex token functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-18',
+            title: 'Fast Access Preview Performance',
+            story: 'As an Organization Administrator, I can preview effective access within 2 seconds so that I can make quick decisions about access changes',
+            category: 'performance',
+            priority: 'Medium',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Administrator access, Users with complex group memberships available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Find user with complex group memberships',
+              'Click "View Effective Access"',
+              'Measure time to load preview',
+              'Verify preview loads within 2 seconds (p95)',
+              'Check that preview shows comprehensive access information'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Preview loads within 2 seconds (p95)',
+              'Comprehensive access information is shown',
+              'Performance is consistent across different user types'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Access preview loads within SLA and shows comprehensive information',
+              fail: 'Preview fails to load within SLA or shows incomplete information',
+              blocked: 'Access preview functionality not available',
+              partial: 'Preview loads but performance or information issues',
+              skip: 'Access preview functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-19',
+            title: 'Quick Search Performance',
+            story: 'As an Organization Administrator, I can search in pickers within 300ms so that I can quickly find users, groups, and hierarchy nodes',
+            category: 'performance',
+            priority: 'Medium',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Organization Administrator access, Search functionality available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Groups page',
+              'Test search in various pickers:',
+              '  - User search',
+              '  - Group search',
+              '  - Hierarchy node search',
+              'Measure search response time',
+              'Verify searches return results within 300ms (p95)'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Search results returned within 300ms (p95)',
+              'Search works for users, groups, and hierarchy nodes',
+              'Performance is consistent across different search types'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Search performance meets SLA across all picker types',
+              fail: 'Search performance fails SLA or functionality issues',
+              blocked: 'Search functionality not available',
+              partial: 'Some searches meet SLA but others do not',
+              skip: 'Search functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-20',
+            title: 'No Access State',
+            story: 'As a User with no group memberships, I can see a clear "No Access" state with guidance on how to request access so that I understand my current status',
+            category: 'end-user',
+            priority: 'Medium',
+            estimatedTime: '5 minutes',
+            prerequisites: 'User with no group memberships available',
+            testSteps: JSON.stringify([
+              'Login as user with no group memberships',
+              'Navigate to platform',
+              'Verify "No Access" state is displayed',
+              'Check that guidance on requesting access is provided',
+              'Verify state provides clear next steps'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              '"No Access" state is clearly displayed',
+              'Guidance on requesting access is provided',
+              'Clear next steps are shown',
+              'User understands current status'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'No Access state is clear and provides helpful guidance',
+              fail: 'No Access state not displayed or guidance unclear',
+              blocked: 'Cannot create user with no group memberships',
+              partial: 'No Access state shown but guidance incomplete',
+              skip: 'No Access state functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-21',
+            title: 'Orphan User Management',
+            story: 'As an Organization Administrator, I can handle orphan users (users with zero groups) by providing clear guidance and request-access CTAs so that users are not left without direction',
+            category: 'org-admin',
+            priority: 'Low',
+            estimatedTime: '6 minutes',
+            prerequisites: 'Organization Administrator access, Users with zero groups available',
+            testSteps: JSON.stringify([
+              'Login as Organization Administrator',
+              'Navigate to Users page',
+              'Find users with zero groups',
+              'Verify clear guidance is provided',
+              'Check that request-access CTAs are available',
+              'Verify users are not left without direction'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Clear guidance is provided for orphan users',
+              'Request-access CTAs are available',
+              'Users are not left without direction',
+              'Management interface is helpful'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Orphan user management provides clear guidance and helpful CTAs',
+              fail: 'Orphan user management fails or provides unclear guidance',
+              blocked: 'Cannot access users with zero groups',
+              partial: 'Basic guidance provided but CTAs missing or unclear',
+              skip: 'Orphan user management functionality not implemented'
             })
           }
         ];
@@ -1581,19 +1261,19 @@ const startServer = async () => {
       console.log('📝 Continuing with empty database...');
     }
 
-    // Start server - Render will set PORT automatically
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Test Tracker Backend running on port ${PORT}`);
-      console.log(`📊 API endpoints available at http://localhost:${PORT}/api/`);
-      console.log(`🌐 Frontend available at http://localhost:${PORT}/`);
+// Start server - Render will set PORT automatically
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Test Tracker Backend running on port ${PORT}`);
+  console.log(`📊 API endpoints available at http://localhost:${PORT}/api/`);
+  console.log(`🌐 Frontend available at http://localhost:${PORT}/`);
       console.log(`💾 Database: ${db.dbPath}`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      
-      if (process.env.RENDER) {
-        console.log(`☁️  Deployed on Render`);
-        console.log(`🔗 Public URL: ${process.env.RENDER_EXTERNAL_URL || 'Not available'}`);
-      }
-    });
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  if (process.env.RENDER) {
+    console.log(`☁️  Deployed on Render`);
+    console.log(`🔗 Public URL: ${process.env.RENDER_EXTERNAL_URL || 'Not available'}`);
+  }
+});
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
