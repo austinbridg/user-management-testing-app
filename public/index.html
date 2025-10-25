@@ -194,6 +194,7 @@
                 <div class="test-management-controls">
                     <button class="btn btn-primary" onclick="app.openCreateTestModal()">+ Create New Test</button>
                     <button class="btn btn-outline" onclick="app.exportTestDefinitions()">Export Test Definitions</button>
+                    <button class="btn btn-outline" onclick="window.tableResizer.resetColumns()" title="Reset column widths to default">📏 Reset Columns</button>
                 </div>
 
                 <div class="test-management-table">
@@ -202,21 +203,32 @@
                             <tr>
                                 <th class="sortable-header" data-sort="id" onclick="app.sortByColumn('id')">
                                     Test ID <span class="sort-arrow" id="sort-arrow-id">↑</span>
+                                    <div class="resize-handle" data-column="0"></div>
                                 </th>
-                                <th>Title</th>
+                                <th>
+                                    Title
+                                    <div class="resize-handle" data-column="1"></div>
+                                </th>
                                 <th class="sortable-header" data-sort="category" onclick="app.sortByColumn('category')">
                                     Category <span class="sort-arrow" id="sort-arrow-category">↕</span>
+                                    <div class="resize-handle" data-column="2"></div>
                                 </th>
                                 <th class="sortable-header" data-sort="priority" onclick="app.sortByColumn('priority')">
                                     Priority <span class="sort-arrow" id="sort-arrow-priority">↕</span>
+                                    <div class="resize-handle" data-column="3"></div>
                                 </th>
                                 <th class="sortable-header" data-sort="status" onclick="app.sortByColumn('status')">
                                     Status <span class="sort-arrow" id="sort-arrow-status">↕</span>
+                                    <div class="resize-handle" data-column="4"></div>
                                 </th>
                                 <th class="sortable-header" data-sort="results" onclick="app.sortByColumn('results')">
                                     Results <span class="sort-arrow" id="sort-arrow-results">↕</span>
+                                    <div class="resize-handle" data-column="5"></div>
                                 </th>
-                                <th>Actions</th>
+                                <th>
+                                    Actions
+                                    <div class="resize-handle" data-column="6"></div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="testManagementTableBody">
@@ -433,6 +445,7 @@
     <script src="js/test-manager.js"></script>
     <script src="js/user-manager.js"></script>
     <script src="js/results-manager.js"></script>
+    <script src="js/table-resizer.js"></script>
     <script src="js/app.js"></script>
     
     <!-- Session management for page close/refresh -->

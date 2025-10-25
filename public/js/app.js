@@ -653,6 +653,13 @@ class App {
                 </td>
             </tr>
         `).join('');
+
+        // Initialize table resizer after table is rendered
+        setTimeout(() => {
+            if (window.tableResizer) {
+                window.tableResizer.loadColumnWidths();
+            }
+        }, 100);
     }
 }
 
