@@ -308,6 +308,11 @@ class App {
         this.currentEditingTestId = testId;
         document.getElementById('testManagementModalTitle').textContent = `Edit Test - ${testId}`;
         
+        // Make ID field editable for existing tests
+        document.getElementById('testId').readOnly = false;
+        document.getElementById('testId').style.backgroundColor = '';
+        document.getElementById('testId').style.cursor = '';
+        
         // Populate form with test data
         document.getElementById('testId').value = test.id;
         document.getElementById('testTitle').value = test.title;
@@ -401,8 +406,24 @@ class App {
         return newId;
     }
     
-    clearTestManagementForm() {
-        document.getElementById('testId').value = '';
+    async clearTestManagementForm() {
+        // Auto-generate test ID for new tests
+        try {
+            const nextId = await this.api.getNextTestId();
+            document.getElementById('testId').value = nextId;
+            document.getElementById('testId').readOnly = true;
+            document.getElementById('testId').style.backgroundColor = '#f8f9fa';
+            document.getElementById('testId').style.cursor = 'not-allowed';
+        } catch (error) {
+            console.error('Failed to get next test ID:', error);
+            // Fallback to manual entry
+            document.getElementById('testId').value = '';
+            document.getElementById('testId').placeholder = 'e.g., TC-001';
+            document.getElementById('testId').readOnly = false;
+            document.getElementById('testId').style.backgroundColor = '';
+            document.getElementById('testId').style.cursor = '';
+        }
+        
         document.getElementById('testTitle').value = '';
         document.getElementById('testStory').value = '';
         document.getElementById('testCategory').value = 'system-admin';

@@ -422,6 +422,23 @@ app.get('/api/tests', async (req, res) => {
   }
 });
 
+// Get next test ID
+app.get('/api/tests/next-id', async (req, res) => {
+  try {
+    const nextId = await db.getNextTestId();
+    res.json({
+      success: true,
+      nextId: nextId
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get next test ID',
+      message: error.message
+    });
+  }
+});
+
 // Get test by ID
 app.get('/api/tests/:id', async (req, res) => {
   try {
@@ -451,10 +468,10 @@ app.post('/api/tests', async (req, res) => {
   try {
     const testData = req.body;
     
-    if (!testData.id || !testData.title) {
+    if (!testData.title) {
       return res.status(400).json({
         success: false,
-        error: 'Test ID and title are required'
+        error: 'Test title is required'
       });
     }
 

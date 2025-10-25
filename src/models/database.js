@@ -243,30 +243,63 @@ class Database {
         });
     }
 
-    // Create a new test
-    async createTest(testData) {
+    // Get the next available test ID
+    async getNextTestId() {
         return new Promise((resolve, reject) => {
-            const {
-                id, title, story, category, priority, estimatedTime, prerequisites,
-                testSteps, acceptanceCriteria, statusGuidance
-            } = testData;
-
-            this.db.run(
-                `INSERT INTO tests (id, title, story, category, priority, estimated_time, 
-                 prerequisites, test_steps, acceptance_criteria, status_guidance) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    id, title, story, category, priority, estimatedTime, prerequisites,
-                    JSON.stringify(testSteps), JSON.stringify(acceptanceCriteria), JSON.stringify(statusGuidance)
-                ],
-                function(err) {
-                    if (err) {
-                        reject(err);
+            this.db.all('SELECT id FROM tests ORDER BY CAST(SUBSTR(id, 4) AS INTEGER) DESC LIMIT 1', (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (rows.length === 0) {
+                        // No tests exist, start with TC-01
+                        resolve('TC-01');
                     } else {
-                        resolve({ id, ...testData });
+                        // Extract the number from the last test ID and increment
+                        const lastId = rows[0].id;
+                        const lastNumber = parseInt(lastId.substring(3)); // Remove "TC-" prefix
+                        const nextNumber = lastNumber + 1;
+                        const nextId = `TC-${nextNumber.toString().padStart(2, '0')}`;
+                        resolve(nextId);
                     }
                 }
-            );
+            });
+        });
+    }
+
+    // Create a new test with automatic ID generation
+    async createTest(testData) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Generate automatic ID if not provided
+                let testId = testData.id;
+                if (!testId) {
+                    testId = await this.getNextTestId();
+                }
+
+                const {
+                    title, story, category, priority, estimatedTime, prerequisites,
+                    testSteps, acceptanceCriteria, statusGuidance
+                } = testData;
+
+                this.db.run(
+                    `INSERT INTO tests (id, title, story, category, priority, estimated_time, 
+                     prerequisites, test_steps, acceptance_criteria, status_guidance) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        testId, title, story, category, priority, estimatedTime, prerequisites,
+                        JSON.stringify(testSteps), JSON.stringify(acceptanceCriteria), JSON.stringify(statusGuidance)
+                    ],
+                    function(err) {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve({ id: testId, ...testData });
+                        }
+                    }
+                );
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
