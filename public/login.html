@@ -230,27 +230,11 @@
                         console.log('✅ Login successful, redirecting to /app...');
                         console.log('📊 Login response data:', data);
                         
-                        // Verify session before redirect
-                        setTimeout(async () => {
-                            try {
-                                const authCheck = await fetch('/api/auth-status', {
-                                    credentials: 'same-origin'
-                                });
-                                const authData = await authCheck.json();
-                                console.log('🔍 Auth status check:', authData);
-                                
-                                if (authData.authenticated) {
-                                    console.log('✅ Session verified, redirecting...');
-                                    window.location.href = '/app';
-                                } else {
-                                    console.log('❌ Session not verified, retrying...');
-                                    showError('Session not established. Please try again.');
-                                }
-                            } catch (error) {
-                                console.error('❌ Auth check failed:', error);
-                                showError('Authentication verification failed. Please try again.');
-                            }
-                        }, 500); // Increased delay for Render
+                        // Direct redirect without session verification for Render compatibility
+                        setTimeout(() => {
+                            console.log('✅ Redirecting to /app...');
+                            window.location.href = '/app';
+                        }, 100); // Short delay for Render
                     } else {
                         console.log('❌ Login failed:', data.error);
                         showError(data.error || 'Login failed');

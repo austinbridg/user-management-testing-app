@@ -131,8 +131,15 @@ app.post('/api/login', (req, res) => {
 });
 
 app.get('/api/auth-status', (req, res) => {
+  console.log('🔍 Auth status check:', {
+    sessionId: req.sessionID,
+    authenticated: !!req.session.authenticated,
+    timestamp: new Date().toISOString()
+  });
+  
   res.json({ 
-    authenticated: !!req.session.authenticated 
+    authenticated: !!req.session.authenticated,
+    sessionId: req.sessionID
   });
 });
 
