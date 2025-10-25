@@ -23,27 +23,38 @@ app.use(bodyParser.json({ limit: '10mb' }));
 // Session configuration - optimized for Render deployment
 const sessionConfig = {
   secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // Force session save on every request for Render
+  saveUninitialized: true, // Save uninitialized sessions for Render
+  rolling: true, // Reset expiration on every request
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (Render)
+    secure: false, // Disable secure for Render compatibility
     maxAge: 5 * 60 * 1000, // 5 minutes - reasonable session length
     httpOnly: true,
-    sameSite: 'lax' // Better compatibility with Render
+    sameSite: 'none' // Allow cross-site cookies for Render
   },
   name: 'test-tracker-session' // Custom session name to avoid conflicts
 };
 
-// On Render, use memory store for better session persistence
-if (process.env.RENDER) {
-  console.log('🌐 Render detected - using memory session store');
-  const MemoryStore = require('memorystore')(session);
-  sessionConfig.store = new MemoryStore({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  });
-}
+// Always use memory store for better session persistence
+console.log('🌐 Using memory session store for better persistence');
+const MemoryStore = require('memorystore')(session);
+sessionConfig.store = new MemoryStore({
+  checkPeriod: 86400000 // prune expired entries every 24h
+});
 
 app.use(session(sessionConfig));
+
+// Session debugging middleware
+app.use((req, res, next) => {
+  console.log('🔍 Session middleware:', {
+    sessionId: req.sessionID,
+    authenticated: !!req.session.authenticated,
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+  next();
+});
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
@@ -101,24 +112,14 @@ app.post('/api/login', (req, res) => {
   
   if (password === APP_PASSWORD) {
     req.session.authenticated = true;
-    req.session.save((err) => {
-      if (err) {
-        console.error('❌ Session save error:', err);
-        return res.status(500).json({ 
-          success: false, 
-          error: 'Session error' 
-        });
-      }
-      
-      console.log('✅ Login successful, session authenticated:', req.sessionID);
-      console.log('📊 Session data:', req.session);
-      
-      res.json({ 
-        success: true, 
-        message: 'Login successful',
-        redirect: '/app',
-        sessionId: req.sessionID
-      });
+    console.log('✅ Login successful, session authenticated:', req.sessionID);
+    console.log('📊 Session data:', req.session);
+    
+    res.json({ 
+      success: true, 
+      message: 'Login successful',
+      redirect: '/app',
+      sessionId: req.sessionID
     });
   } else {
     console.log('❌ Login failed: Invalid password');
