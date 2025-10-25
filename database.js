@@ -312,6 +312,19 @@ class Database {
         });
     }
 
+    // Clear all tests (for migration purposes)
+    async clearAllTests() {
+        return new Promise((resolve, reject) => {
+            this.db.run('DELETE FROM tests', function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ changes: this.changes });
+                }
+            });
+        });
+    }
+
     // TEST RESULTS OPERATIONS
 
     // Get all test results
