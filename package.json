@@ -8,8 +8,6 @@
     "dev": "nodemon server.js",
     "build": "echo 'No build step required'",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate": "node migrate.js",
-    "seed": "node migrate.js seed",
     "report": "node generate-test-report.js"
   },
   "keywords": [
