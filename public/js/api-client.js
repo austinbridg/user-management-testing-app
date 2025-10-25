@@ -17,10 +17,18 @@ class APIClient {
                     'Content-Type': 'application/json',
                     ...options.headers
                 },
+                credentials: 'same-origin', // Include session cookies
                 ...options
             });
 
             console.log(`📡 API Response: ${response.status} ${response.statusText}`);
+            
+            // Handle authentication errors
+            if (response.status === 401) {
+                console.log('🔒 Authentication required, redirecting to login...');
+                window.location.href = '/login';
+                return;
+            }
             
             if (!response.ok) {
                 const errorText = await response.text();

@@ -34,10 +34,39 @@ class App {
         }
     }
     
+    // Check authentication status
+    async checkAuthentication() {
+        try {
+            const response = await fetch('/api/auth-status', {
+                credentials: 'same-origin'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Authentication check failed');
+            }
+            
+            const data = await response.json();
+            
+            if (!data.authenticated) {
+                console.log('🔒 Not authenticated, redirecting to login...');
+                window.location.href = '/login';
+                return;
+            }
+            
+            console.log('✅ Authentication verified');
+        } catch (error) {
+            console.error('❌ Authentication check failed:', error);
+            window.location.href = '/login';
+        }
+    }
+    
     // Initialize the application
     async init() {
         try {
             console.log('🚀 Initializing application...');
+            
+            // Check authentication status first
+            await this.checkAuthentication();
             
             // Add a small delay to ensure server is ready
             await new Promise(resolve => setTimeout(resolve, 1000));

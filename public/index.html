@@ -434,5 +434,24 @@
     <script src="js/user-manager.js"></script>
     <script src="js/results-manager.js"></script>
     <script src="js/app.js"></script>
+    
+    <!-- Session management for page close/refresh -->
+    <script>
+        // Logout when page is closed or refreshed
+        window.addEventListener('beforeunload', function() {
+            // Use sendBeacon for reliable logout on page unload
+            navigator.sendBeacon('/api/logout');
+        });
+        
+        // Also handle page visibility change (tab switching)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page is hidden, logout
+                fetch('/api/logout', { method: 'POST' }).catch(() => {
+                    // Ignore errors during logout
+                });
+            }
+        });
+    </script>
 </body>
 </html>

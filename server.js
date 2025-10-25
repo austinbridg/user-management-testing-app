@@ -3,6 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const Database = require('./database');
+const session = require('express-session');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,10 +12,105 @@ const PORT = process.env.PORT || 3000;
 // Initialize database
 const db = new Database();
 
+// Configuration
+const APP_PASSWORD = process.env.APP_PASSWORD || 'test123'; // Change this for production
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
-app.use(express.static('public'));
+
+// Session configuration - short-lived sessions that expire on page close/refresh
+app.use(session({
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    maxAge: 30 * 1000, // 30 seconds - very short session
+    httpOnly: true
+  }
+}));
+
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+  if (req.session.authenticated) {
+    next();
+  } else {
+    res.status(401).json({ 
+      success: false, 
+      error: 'Authentication required',
+      redirect: '/login'
+    });
+  }
+};
+
+// Always redirect to login - no persistent access
+app.get('/', (req, res) => {
+  res.redirect('/login');
+});
+
+// Serve main app only when authenticated (special route)
+app.get('/app', (req, res) => {
+  if (req.session.authenticated) {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } else {
+    res.redirect('/login');
+  }
+});
+
+// Authentication Routes
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === APP_PASSWORD) {
+    req.session.authenticated = true;
+    res.json({ 
+      success: true, 
+      message: 'Login successful',
+      redirect: '/app'
+    });
+  } else {
+    res.status(401).json({ 
+      success: false, 
+      error: 'Invalid password' 
+    });
+  }
+});
+
+app.get('/api/auth-status', (req, res) => {
+  res.json({ 
+    authenticated: !!req.session.authenticated 
+  });
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      res.status(500).json({ 
+        success: false, 
+        error: 'Logout failed' 
+      });
+    } else {
+      res.json({ 
+        success: true, 
+        message: 'Logged out successfully'
+      });
+    }
+  });
+});
+
+// Protected Routes - All API endpoints now require authentication
+app.use('/api', requireAuth);
+
+// Serve static files (CSS, JS, etc.) - but not HTML files
+app.use(express.static('public', {
+  index: false // Don't serve index.html automatically
+}));
 
 // API Routes
 
@@ -83,8 +180,8 @@ app.post('/api/data', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   try {
     const users = await db.getUsers();
-    res.json({
-      success: true,
+      res.json({
+        success: true,
       users: users
     });
   } catch (error) {
@@ -112,8 +209,8 @@ app.get('/api/users/:id', async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({
-      success: false,
+      res.status(500).json({
+        success: false,
       error: 'Failed to load user',
       message: error.message
     });
@@ -145,11 +242,11 @@ app.post('/api/users', async (req, res) => {
         error: 'User with this name already exists'
       });
     } else {
-      res.status(500).json({
-        success: false,
+    res.status(500).json({
+      success: false,
         error: 'Failed to create user',
-        message: error.message
-      });
+      message: error.message
+    });
     }
   }
 });
@@ -168,8 +265,8 @@ app.put('/api/users/:id', async (req, res) => {
 
     const result = await db.updateUser(req.params.id, name.trim());
     if (result.changes > 0) {
-      res.json({
-        success: true,
+    res.json({
+      success: true,
         message: 'User updated successfully',
         user: result
       });
@@ -180,8 +277,8 @@ app.put('/api/users/:id', async (req, res) => {
       });
     }
   } catch (error) {
-      res.status(500).json({
-        success: false,
+    res.status(500).json({
+      success: false,
       error: 'Failed to update user',
       message: error.message
     });
@@ -526,11 +623,6 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     port: PORT
   });
-});
-
-// Serve the main HTML file
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Error handling middleware
