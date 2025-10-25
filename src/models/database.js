@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 class Database {
     constructor() {
         this.db = null;
-        this.dbPath = path.join(__dirname, 'data', 'test-tracker.db');
+        this.dbPath = path.join(__dirname, '../../data', 'test-tracker.db');
     }
 
     // Initialize database connection and create tables

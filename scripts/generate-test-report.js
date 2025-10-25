@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const Database = require('./database');
+const Database = require('../src/models/database');
 const fs = require('fs-extra');
 const path = require('path');
 

@@ -10,14 +10,14 @@ if [ ! -f "package.json" ]; then
 fi
 
 # Check if render.yaml exists
-if [ ! -f "render.yaml" ]; then
-    echo "❌ Error: render.yaml not found. Please ensure the Render configuration file exists."
+if [ ! -f "config/render.yaml" ]; then
+    echo "❌ Error: config/render.yaml not found. Please ensure the Render configuration file exists."
     exit 1
 fi
 
 # Check if server.js exists
-if [ ! -f "server.js" ]; then
-    echo "❌ Error: server.js not found. Please ensure the main server file exists."
+if [ ! -f "src/server.js" ]; then
+    echo "❌ Error: src/server.js not found. Please ensure the main server file exists."
     exit 1
 fi
 
@@ -44,7 +44,7 @@ fi
 
 # Test the server locally (optional)
 echo "🧪 Testing server startup..."
-node server.js &
+node src/server.js &
 server_pid=$!
 sleep 3
 

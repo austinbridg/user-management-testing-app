@@ -1,12 +1,12 @@
-const Database = require('./database');
+const Database = require('../models/database');
 const fs = require('fs-extra');
 const path = require('path');
 
 class DataMigration {
     constructor() {
         this.db = new Database();
-        this.dataDir = path.join(__dirname, 'data');
-        this.workDir = path.join(__dirname, 'work');
+        this.dataDir = path.join(__dirname, '../../data');
+        this.workDir = path.join(__dirname, '../../work');
     }
 
     async migrate() {

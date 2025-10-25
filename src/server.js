@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const Database = require('./database');
+const Database = require('./models/database');
 const session = require('express-session');
 const crypto = require('crypto');
 
