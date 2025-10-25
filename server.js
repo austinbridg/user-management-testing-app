@@ -1243,6 +1243,427 @@ const startServer = async () => {
               partial: 'Basic guidance provided but CTAs missing or unclear',
               skip: 'Orphan user management functionality not implemented'
             })
+          },
+          {
+            id: 'TC-22',
+            title: 'Organization Manager Role Assignment',
+            story: 'As a System Administrator, I can assign Organization Manager roles to users so that they can manage their organization effectively',
+            category: 'org-manager',
+            priority: 'High',
+            estimatedTime: '12 minutes',
+            prerequisites: 'System Administrator access, Test users available',
+            testSteps: JSON.stringify([
+              'Login as System Administrator',
+              'Navigate to User Management',
+              'Select a user to assign Organization Manager role',
+              'Assign Organization Manager role',
+              'Verify role assignment is successful',
+              'Test Organization Manager permissions'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Organization Manager role can be assigned successfully',
+              'User receives appropriate permissions',
+              'Role assignment is reflected in user profile',
+              'Organization Manager can access required features'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Manager role assignment works correctly with proper permissions',
+              fail: 'Role assignment fails or permissions are incorrect',
+              blocked: 'Cannot access user management or System Administrator access unavailable',
+              partial: 'Role assigned but permissions not working correctly',
+              skip: 'Organization Manager role functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-23',
+            title: 'Organization Manager Group Management',
+            story: 'As an Organization Manager, I can create and manage groups within my organization so that I can organize users effectively',
+            category: 'org-manager',
+            priority: 'High',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Manager access, Test organization available',
+            testSteps: JSON.stringify([
+              'Login as Organization Manager',
+              'Navigate to Groups section',
+              'Create a new group',
+              'Add users to the group',
+              'Modify group settings',
+              'Verify group management functionality'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can create new groups successfully',
+              'Can add/remove users from groups',
+              'Can modify group settings',
+              'Group changes are reflected immediately'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'All group management functions work correctly',
+              fail: 'Group management functions fail or work incorrectly',
+              blocked: 'Cannot access Groups section or Organization Manager access unavailable',
+              partial: 'Some group management functions work but others fail',
+              skip: 'Group management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-24',
+            title: 'Organization Manager User Invitation',
+            story: 'As an Organization Manager, I can invite users to my organization so that I can expand my team',
+            category: 'org-manager',
+            priority: 'Medium',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Organization Manager access, Test email addresses available',
+            testSteps: JSON.stringify([
+              'Login as Organization Manager',
+              'Navigate to Users page',
+              'Click "Invite User" button',
+              'Enter user email address',
+              'Select appropriate group for user',
+              'Send invitation',
+              'Verify invitation is sent successfully'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can send user invitations successfully',
+              'Invitation email is sent to user',
+              'User appears in pending invitations list',
+              'Can assign users to groups during invitation'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'User invitation process works correctly',
+              fail: 'User invitation process fails',
+              blocked: 'Cannot access Users page or Organization Manager access unavailable',
+              partial: 'Invitation sent but some features not working',
+              skip: 'User invitation functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-25',
+            title: 'Organization Manager Permission Management',
+            story: 'As an Organization Manager, I can manage permissions for users in my organization so that I can control access appropriately',
+            category: 'org-manager',
+            priority: 'Medium',
+            estimatedTime: '12 minutes',
+            prerequisites: 'Organization Manager access, Users with various roles available',
+            testSteps: JSON.stringify([
+              'Login as Organization Manager',
+              'Navigate to User Management',
+              'Select a user to modify permissions',
+              'Modify user permissions',
+              'Save changes',
+              'Verify permission changes are applied'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can modify user permissions successfully',
+              'Permission changes are saved correctly',
+              'Users experience updated permissions immediately',
+              'Permission management interface is intuitive'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Permission management works correctly',
+              fail: 'Permission management fails or changes not applied',
+              blocked: 'Cannot access permission management or Organization Manager access unavailable',
+              partial: 'Some permission changes work but others fail',
+              skip: 'Permission management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-26',
+            title: 'Organization Manager Reporting',
+            story: 'As an Organization Manager, I can view reports about my organization so that I can monitor user activity and access',
+            category: 'org-manager',
+            priority: 'Low',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Manager access, User activity data available',
+            testSteps: JSON.stringify([
+              'Login as Organization Manager',
+              'Navigate to Reports section',
+              'View organization user report',
+              'View access activity report',
+              'Export report data',
+              'Verify report accuracy'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can view organization reports successfully',
+              'Report data is accurate and up-to-date',
+              'Can export reports in various formats',
+              'Reports provide meaningful insights'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Reporting functionality works correctly with accurate data',
+              fail: 'Reports fail to load or contain inaccurate data',
+              blocked: 'Cannot access Reports section or Organization Manager access unavailable',
+              partial: 'Reports load but some features not working',
+              skip: 'Reporting functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-27',
+            title: 'Organization Manager Audit Trail',
+            story: 'As an Organization Manager, I can view audit trails for my organization so that I can track changes and maintain security',
+            category: 'org-manager',
+            priority: 'Medium',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Organization Manager access, Audit trail data available',
+            testSteps: JSON.stringify([
+              'Login as Organization Manager',
+              'Navigate to Audit Trail section',
+              'View recent organization changes',
+              'Filter audit trail by date range',
+              'View detailed change information',
+              'Export audit trail data'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can view audit trail successfully',
+              'Audit trail shows all relevant changes',
+              'Can filter and search audit data',
+              'Audit trail data is accurate and complete'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Audit trail functionality works correctly with complete data',
+              fail: 'Audit trail fails to load or missing data',
+              blocked: 'Cannot access Audit Trail section or Organization Manager access unavailable',
+              partial: 'Audit trail loads but some features not working',
+              skip: 'Audit trail functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-28',
+            title: 'Organization Manager Bulk Operations',
+            story: 'As an Organization Manager, I can perform bulk operations on users so that I can manage large numbers of users efficiently',
+            category: 'org-manager',
+            priority: 'Medium',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Manager access, Multiple test users available',
+            testSteps: JSON.stringify([
+              'Login as Organization Manager',
+              'Navigate to User Management',
+              'Select multiple users',
+              'Perform bulk role assignment',
+              'Perform bulk group assignment',
+              'Verify bulk operations completed successfully'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can select multiple users successfully',
+              'Bulk operations complete without errors',
+              'All selected users are updated correctly',
+              'Bulk operation results are clearly displayed'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Bulk operations work correctly for all selected users',
+              fail: 'Bulk operations fail or only partially complete',
+              blocked: 'Cannot access bulk operations or Organization Manager access unavailable',
+              partial: 'Some bulk operations work but others fail',
+              skip: 'Bulk operations functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-29',
+            title: 'Organization Manager Integration Testing',
+            story: 'As an Organization Manager, I can verify that all integrations work correctly so that I can ensure system reliability',
+            category: 'org-manager',
+            priority: 'Low',
+            estimatedTime: '20 minutes',
+            prerequisites: 'Organization Manager access, All integrations configured',
+            testSteps: JSON.stringify([
+              'Login as Organization Manager',
+              'Test email integration',
+              'Test SSO integration',
+              'Test API integrations',
+              'Verify data synchronization',
+              'Test error handling'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'All integrations work correctly',
+              'Data synchronization is accurate',
+              'Error handling is appropriate',
+              'Integration performance is acceptable'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'All integrations work correctly with proper error handling',
+              fail: 'One or more integrations fail or work incorrectly',
+              blocked: 'Cannot access integration features or Organization Manager access unavailable',
+              partial: 'Most integrations work but some have issues',
+              skip: 'Integration testing functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-30',
+            title: 'Organization Member Profile Management',
+            story: 'As an Organization Member, I can manage my profile information so that my account details are accurate and up-to-date',
+            category: 'org-member',
+            priority: 'Medium',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Member access, Profile management available',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Profile section',
+              'Update personal information',
+              'Change password',
+              'Update notification preferences',
+              'Save changes and verify updates'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can update profile information successfully',
+              'Password change works correctly',
+              'Notification preferences are saved',
+              'Profile changes are reflected immediately'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Profile management works correctly with all features',
+              fail: 'Profile management fails or some features not working',
+              blocked: 'Cannot access Profile section or Organization Member access unavailable',
+              partial: 'Some profile features work but others fail',
+              skip: 'Profile management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-31',
+            title: 'Organization Member Group Access',
+            story: 'As an Organization Member, I can view and request access to groups so that I can collaborate with appropriate teams',
+            category: 'org-member',
+            priority: 'High',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Organization Member access, Groups available in organization',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Groups section',
+              'View available groups',
+              'Request access to a group',
+              'View current group memberships',
+              'Verify group access requests'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can view available groups successfully',
+              'Can request access to groups',
+              'Group access requests are submitted correctly',
+              'Current group memberships are displayed accurately'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Group access functionality works correctly',
+              fail: 'Group access functionality fails or requests not submitted',
+              blocked: 'Cannot access Groups section or Organization Member access unavailable',
+              partial: 'Some group features work but others fail',
+              skip: 'Group access functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-32',
+            title: 'Organization Member Resource Access',
+            story: 'As an Organization Member, I can access resources based on my group memberships so that I can perform my job effectively',
+            category: 'org-member',
+            priority: 'High',
+            estimatedTime: '12 minutes',
+            prerequisites: 'Organization Member access, Resources with group-based permissions available',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Resources section',
+              'View accessible resources',
+              'Attempt to access restricted resources',
+              'Verify access permissions are enforced',
+              'Test resource functionality'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can access permitted resources successfully',
+              'Cannot access restricted resources',
+              'Resource permissions are enforced correctly',
+              'Resource functionality works as expected'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Resource access and permissions work correctly',
+              fail: 'Resource access fails or permissions not enforced',
+              blocked: 'Cannot access Resources section or Organization Member access unavailable',
+              partial: 'Some resources accessible but permissions not working correctly',
+              skip: 'Resource access functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-33',
+            title: 'Organization Member Collaboration',
+            story: 'As an Organization Member, I can collaborate with other members in my groups so that I can work effectively with my team',
+            category: 'org-member',
+            priority: 'Medium',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Member access, Other members in same groups available',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Collaboration section',
+              'View team members in groups',
+              'Send messages to team members',
+              'Share resources with team',
+              'Participate in group discussions'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can view team members successfully',
+              'Can send messages to team members',
+              'Can share resources with team',
+              'Can participate in group discussions'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'All collaboration features work correctly',
+              fail: 'Collaboration features fail or not working properly',
+              blocked: 'Cannot access Collaboration section or Organization Member access unavailable',
+              partial: 'Some collaboration features work but others fail',
+              skip: 'Collaboration functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-34',
+            title: 'Organization Member Notification Management',
+            story: 'As an Organization Member, I can manage my notification preferences so that I receive relevant updates without being overwhelmed',
+            category: 'org-member',
+            priority: 'Low',
+            estimatedTime: '6 minutes',
+            prerequisites: 'Organization Member access, Notification system available',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Notification Settings',
+              'Configure notification preferences',
+              'Test different notification types',
+              'Save preferences',
+              'Verify notification settings are applied'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Can configure notification preferences successfully',
+              'Notification settings are saved correctly',
+              'Notifications are received according to preferences',
+              'Notification management interface is intuitive'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Notification management works correctly with proper settings',
+              fail: 'Notification management fails or settings not applied',
+              blocked: 'Cannot access Notification Settings or Organization Member access unavailable',
+              partial: 'Some notification features work but others fail',
+              skip: 'Notification management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-35',
+            title: 'Organization Member Mobile Access',
+            story: 'As an Organization Member, I can access the platform from mobile devices so that I can work effectively from anywhere',
+            category: 'org-member',
+            priority: 'Low',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Member access, Mobile device available',
+            testSteps: JSON.stringify([
+              'Access platform from mobile device',
+              'Login as Organization Member',
+              'Navigate through mobile interface',
+              'Test core functionality on mobile',
+              'Verify responsive design works',
+              'Test mobile-specific features'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Platform is accessible from mobile devices',
+              'Mobile interface is responsive and functional',
+              'Core features work on mobile',
+              'Mobile experience is user-friendly'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Mobile access works correctly with good user experience',
+              fail: 'Mobile access fails or poor user experience',
+              blocked: 'Cannot access platform from mobile or Organization Member access unavailable',
+              partial: 'Some mobile features work but others have issues',
+              skip: 'Mobile access functionality not implemented'
+            })
           }
         ];
         
