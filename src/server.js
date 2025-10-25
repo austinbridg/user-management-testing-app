@@ -21,7 +21,7 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 
 // Session configuration - optimized for Render deployment
-app.use(session({
+const sessionConfig = {
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -32,7 +32,18 @@ app.use(session({
     sameSite: 'lax' // Better compatibility with Render
   },
   name: 'test-tracker-session' // Custom session name to avoid conflicts
-}));
+};
+
+// On Render, use memory store for better session persistence
+if (process.env.RENDER) {
+  console.log('🌐 Render detected - using memory session store');
+  const MemoryStore = require('memorystore')(session);
+  sessionConfig.store = new MemoryStore({
+    checkPeriod: 86400000 // prune expired entries every 24h
+  });
+}
+
+app.use(session(sessionConfig));
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
@@ -57,7 +68,10 @@ app.get('/app', (req, res) => {
   console.log('🌐 /app route accessed:', {
     authenticated: !!req.session.authenticated,
     sessionId: req.sessionID,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    isRender: !!process.env.RENDER,
+    sessionData: req.session
   });
   
   if (req.session.authenticated) {
@@ -80,16 +94,31 @@ app.post('/api/login', (req, res) => {
   console.log('🔐 Login attempt:', { 
     passwordMatch: password === APP_PASSWORD,
     sessionId: req.sessionID,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    isRender: !!process.env.RENDER
   });
   
   if (password === APP_PASSWORD) {
     req.session.authenticated = true;
-    console.log('✅ Login successful, session authenticated:', req.sessionID);
-    res.json({ 
-      success: true, 
-      message: 'Login successful',
-      redirect: '/app'
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Session save error:', err);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Session error' 
+        });
+      }
+      
+      console.log('✅ Login successful, session authenticated:', req.sessionID);
+      console.log('📊 Session data:', req.session);
+      
+      res.json({ 
+        success: true, 
+        message: 'Login successful',
+        redirect: '/app',
+        sessionId: req.sessionID
+      });
     });
   } else {
     console.log('❌ Login failed: Invalid password');
