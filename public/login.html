@@ -227,9 +227,13 @@
                     console.log('Login response:', data);
 
                     if (data.success) {
-                        // Redirect to main app
-                        window.location.href = '/app';
+                        console.log('✅ Login successful, redirecting to /app...');
+                        // Small delay to ensure session is set
+                        setTimeout(() => {
+                            window.location.href = '/app';
+                        }, 100);
                     } else {
+                        console.log('❌ Login failed:', data.error);
                         showError(data.error || 'Login failed');
                         passwordInput.focus();
                     }

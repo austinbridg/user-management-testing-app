@@ -20,16 +20,18 @@ const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toSt
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 
-// Session configuration - short-lived sessions that expire on page close/refresh
+// Session configuration - optimized for Render deployment
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (Render)
     maxAge: 5 * 60 * 1000, // 5 minutes - reasonable session length
-    httpOnly: true
-  }
+    httpOnly: true,
+    sameSite: 'lax' // Better compatibility with Render
+  },
+  name: 'test-tracker-session' // Custom session name to avoid conflicts
 }));
 
 // Authentication middleware
@@ -52,9 +54,17 @@ app.get('/', (req, res) => {
 
 // Serve main app only when authenticated (special route)
 app.get('/app', (req, res) => {
+  console.log('🌐 /app route accessed:', {
+    authenticated: !!req.session.authenticated,
+    sessionId: req.sessionID,
+    timestamp: new Date().toISOString()
+  });
+  
   if (req.session.authenticated) {
+    console.log('✅ Serving main app to authenticated user');
     res.sendFile(path.join(__dirname, '../public', 'index.html'));
   } else {
+    console.log('❌ Redirecting unauthenticated user to login');
     res.redirect('/login');
   }
 });
@@ -67,14 +77,22 @@ app.get('/login', (req, res) => {
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   
+  console.log('🔐 Login attempt:', { 
+    passwordMatch: password === APP_PASSWORD,
+    sessionId: req.sessionID,
+    timestamp: new Date().toISOString()
+  });
+  
   if (password === APP_PASSWORD) {
     req.session.authenticated = true;
+    console.log('✅ Login successful, session authenticated:', req.sessionID);
     res.json({ 
       success: true, 
       message: 'Login successful',
       redirect: '/app'
     });
   } else {
+    console.log('❌ Login failed: Invalid password');
     res.status(401).json({ 
       success: false, 
       error: 'Invalid password' 
