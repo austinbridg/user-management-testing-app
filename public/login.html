@@ -212,9 +212,12 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
                         },
                         body: JSON.stringify({ password }),
-                        credentials: 'same-origin'
+                        credentials: 'same-origin',
+                        cache: 'no-store'
                     });
 
                     console.log('Response received:', response.status, response.statusText);
@@ -230,11 +233,27 @@
                         console.log('✅ Login successful, redirecting to /app...');
                         console.log('📊 Login response data:', data);
                         
-                        // Direct redirect without session verification for Render compatibility
+                        // Multiple redirect strategies for Render compatibility
                         setTimeout(() => {
-                            console.log('✅ Redirecting to /app...');
-                            window.location.href = '/app';
-                        }, 100); // Short delay for Render
+                            console.log('✅ Attempting redirect to /app...');
+                            
+                            // Strategy 1: Direct location change
+                            try {
+                                window.location.href = '/app';
+                            } catch (error) {
+                                console.log('❌ Direct redirect failed, trying replace:', error);
+                                
+                                // Strategy 2: Location replace
+                                try {
+                                    window.location.replace('/app');
+                                } catch (error2) {
+                                    console.log('❌ Replace redirect failed, trying assign:', error2);
+                                    
+                                    // Strategy 3: Location assign
+                                    window.location.assign('/app');
+                                }
+                            }
+                        }, 200); // Slightly longer delay for Render
                     } else {
                         console.log('❌ Login failed:', data.error);
                         showError(data.error || 'Login failed');

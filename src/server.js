@@ -20,26 +20,33 @@ const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toSt
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 
-// Session configuration - optimized for Render deployment
+// Session configuration - PERMANENT SOLUTION for Render
 const sessionConfig = {
   secret: SESSION_SECRET,
-  resave: true, // Force session save on every request for Render
-  saveUninitialized: true, // Save uninitialized sessions for Render
-  rolling: true, // Reset expiration on every request
+  resave: false, // Don't force resave - let express-session handle it
+  saveUninitialized: false, // Only save when session is modified
+  rolling: false, // Don't reset expiration on every request
   cookie: {
-    secure: false, // Disable secure for Render compatibility
-    maxAge: 5 * 60 * 1000, // 5 minutes - reasonable session length
+    secure: false, // Must be false for Render HTTP
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours - longer session for stability
     httpOnly: true,
-    sameSite: 'none' // Allow cross-site cookies for Render
+    sameSite: 'lax', // Use 'lax' for better compatibility
+    path: '/' // Explicit path
   },
-  name: 'test-tracker-session' // Custom session name to avoid conflicts
+  name: 'test-tracker-session',
+  // Use a more robust session store configuration
+  store: undefined // Let express-session use default memory store
 };
 
-// Always use memory store for better session persistence
-console.log('🌐 Using memory session store for better persistence');
+// Enhanced memory store for Render
+console.log('🌐 Configuring enhanced session store for Render');
 const MemoryStore = require('memorystore')(session);
 sessionConfig.store = new MemoryStore({
-  checkPeriod: 86400000 // prune expired entries every 24h
+  checkPeriod: 86400000, // prune expired entries every 24h
+  max: 1000, // Maximum number of sessions
+  dispose: (key, sess) => {
+    console.log('🗑️ Session disposed:', key);
+  }
 });
 
 app.use(session(sessionConfig));
@@ -82,11 +89,19 @@ app.get('/app', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     isRender: !!process.env.RENDER,
-    sessionData: req.session
+    sessionData: req.session,
+    cookies: req.headers.cookie,
+    userAgent: req.get('User-Agent')
   });
   
   if (req.session.authenticated) {
     console.log('✅ Serving main app to authenticated user');
+    
+    // Set headers to prevent caching
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     res.sendFile(path.join(__dirname, '../public', 'index.html'));
   } else {
     console.log('❌ Redirecting unauthenticated user to login');
@@ -107,19 +122,43 @@ app.post('/api/login', (req, res) => {
     sessionId: req.sessionID,
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
-    isRender: !!process.env.RENDER
+    isRender: !!process.env.RENDER,
+    userAgent: req.get('User-Agent'),
+    origin: req.get('Origin'),
+    referer: req.get('Referer')
   });
   
   if (password === APP_PASSWORD) {
+    // Set session data
     req.session.authenticated = true;
-    console.log('✅ Login successful, session authenticated:', req.sessionID);
-    console.log('📊 Session data:', req.session);
+    req.session.loginTime = new Date().toISOString();
+    req.session.userAgent = req.get('User-Agent');
     
-    res.json({ 
-      success: true, 
-      message: 'Login successful',
-      redirect: '/app',
-      sessionId: req.sessionID
+    // Force session save with callback for Render
+    req.session.save((err) => {
+      if (err) {
+        console.error('❌ Session save error:', err);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Session error' 
+        });
+      }
+      
+      console.log('✅ Login successful, session authenticated:', req.sessionID);
+      console.log('📊 Session data:', req.session);
+      
+      // Set additional headers for Render compatibility
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      res.json({ 
+        success: true, 
+        message: 'Login successful',
+        redirect: '/app',
+        sessionId: req.sessionID,
+        timestamp: new Date().toISOString()
+      });
     });
   } else {
     console.log('❌ Login failed: Invalid password');
