@@ -1867,6 +1867,325 @@ const startServer = async () => {
               partial: 'Some mobile features work but others have issues',
               skip: 'Mobile access functionality not implemented'
             })
+          },
+          {
+            id: 'TC-36',
+            title: 'Organization Member User Viewing Access',
+            story: 'As an Organization Member, I can view all users in my organization so that I can see who else is in the organization',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Member access, Multiple users in organization',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Users page',
+              'Verify user list displays all users in organization',
+              'Verify user information includes: name, email, status, group memberships',
+              'Verify no "Add User" or "Create User" buttons are visible',
+              'Verify no edit/delete actions are available for any user',
+              'Verify no bulk action options are available',
+              'Attempt to access user creation URL directly',
+              'Attempt to access user edit URL directly',
+              'Attempt to access user deactivation URL directly'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'User list displays all users in organization',
+              'No administrative action buttons are visible',
+              'Direct URL access to user management functions returns 403 Forbidden',
+              'User can only view user information, not modify it'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member can view users but cannot perform administrative actions',
+              fail: 'Organization Member cannot view users or can perform unauthorized actions',
+              blocked: 'Cannot access Users page or Organization Member access unavailable',
+              partial: 'Some user viewing works but administrative restrictions fail',
+              skip: 'User management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-37',
+            title: 'Organization Member User Group Viewing Access',
+            story: 'As an Organization Member, I can view all user groups in my organization so that I can understand how access is organized',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Member access, Multiple user groups in organization',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to User Groups page',
+              'Verify group list displays all groups in organization',
+              'Verify group information includes: name, description, member count, assigned roles',
+              'Verify no "Create Group" or "Add Group" buttons are visible',
+              'Verify no edit/delete actions are available for any group',
+              'Verify no bulk action options are available',
+              'Attempt to access group creation URL directly',
+              'Attempt to access group edit URL directly',
+              'Attempt to access group deletion URL directly'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Group list displays all groups in organization',
+              'No administrative action buttons are visible',
+              'Direct URL access to group management functions returns 403 Forbidden',
+              'User can only view group information, not modify it'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member can view groups but cannot perform administrative actions',
+              fail: 'Organization Member cannot view groups or can perform unauthorized actions',
+              blocked: 'Cannot access User Groups page or Organization Member access unavailable',
+              partial: 'Some group viewing works but administrative restrictions fail',
+              skip: 'User group management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-38',
+            title: 'Organization Member Hierarchy Viewing Access',
+            story: 'As an Organization Member, I can view all hierarchies in my organization so that I can understand the organizational structure',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Member access, Defined hierarchy structure',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Hierarchies page',
+              'Verify hierarchy structure is displayed',
+              'Verify hierarchy information includes: nodes, relationships, paths',
+              'Verify no "Create Hierarchy" or "Add Node" buttons are visible',
+              'Verify no edit/delete actions are available for any hierarchy node',
+              'Verify no bulk action options are available',
+              'Attempt to access hierarchy creation URL directly',
+              'Attempt to access hierarchy edit URL directly',
+              'Attempt to access hierarchy deletion URL directly'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Hierarchy structure displays correctly',
+              'No administrative action buttons are visible',
+              'Direct URL access to hierarchy management functions returns 403 Forbidden',
+              'User can only view hierarchy information, not modify it'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member can view hierarchies but cannot perform administrative actions',
+              fail: 'Organization Member cannot view hierarchies or can perform unauthorized actions',
+              blocked: 'Cannot access Hierarchies page or Organization Member access unavailable',
+              partial: 'Some hierarchy viewing works but administrative restrictions fail',
+              skip: 'Hierarchy management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-39',
+            title: 'Organization Member Business Entity Viewing Access',
+            story: 'As an Organization Member, I can view business entities so that I can see organizational data and structure',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '8 minutes',
+            prerequisites: 'Organization Member access, Multiple business entities in organization',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Business Entities page',
+              'Verify entity list displays all entities in organization',
+              'Verify entity information includes: name, type, status, hierarchy location',
+              'Verify no "Create Entity" or "Add Entity" buttons are visible',
+              'Verify no edit/delete actions are available for any entity',
+              'Verify no bulk action options are available',
+              'Attempt to access entity creation URL directly',
+              'Attempt to access entity edit URL directly',
+              'Attempt to access entity deletion URL directly'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Entity list displays all entities in organization',
+              'No administrative action buttons are visible',
+              'Direct URL access to entity management functions returns 403 Forbidden',
+              'User can only view entity information, not modify it'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member can view business entities but cannot perform administrative actions',
+              fail: 'Organization Member cannot view business entities or can perform unauthorized actions',
+              blocked: 'Cannot access Business Entities page or Organization Member access unavailable',
+              partial: 'Some entity viewing works but administrative restrictions fail',
+              skip: 'Business entity management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-40',
+            title: 'Organization Member Organization Settings Access Denied',
+            story: 'As an Organization Member, I cannot view or edit organization settings so that I cannot access organization-level information or configurations',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '6 minutes',
+            prerequisites: 'Organization Member access',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Attempt to navigate to Organization Settings page',
+              'Verify access is denied with appropriate error message',
+              'Attempt to access organization settings URL directly',
+              'Verify 403 Forbidden response',
+              'Attempt to access organization configuration API endpoints',
+              'Verify API returns 403 Forbidden',
+              'Check if any organization settings links are visible in navigation',
+              'Verify no organization management options are available'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Organization Settings page access is denied',
+              'Appropriate error message is displayed',
+              'Direct URL access returns 403 Forbidden',
+              'API calls return 403 Forbidden',
+              'No organization settings links are visible',
+              'No organization management options are available'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member cannot access organization settings',
+              fail: 'Organization Member can access organization settings',
+              blocked: 'Cannot test organization settings access or Organization Member access unavailable',
+              partial: 'Some organization settings are restricted but others are accessible',
+              skip: 'Organization settings functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-41',
+            title: 'Organization Member Role Management Access Denied',
+            story: 'As an Organization Member, I cannot create, edit, or delete roles so that I cannot modify permission structures',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '6 minutes',
+            prerequisites: 'Organization Member access',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Attempt to navigate to Roles page',
+              'Verify access is denied with appropriate error message',
+              'Attempt to access roles URL directly',
+              'Verify 403 Forbidden response',
+              'Attempt to access role management API endpoints',
+              'Verify API returns 403 Forbidden',
+              'Check if any role management links are visible in navigation',
+              'Verify no role management options are available'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Roles page access is denied',
+              'Appropriate error message is displayed',
+              'Direct URL access returns 403 Forbidden',
+              'API calls return 403 Forbidden',
+              'No role management links are visible',
+              'No role management options are available'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member cannot access role management',
+              fail: 'Organization Member can access role management',
+              blocked: 'Cannot test role management access or Organization Member access unavailable',
+              partial: 'Some role management functions are restricted but others are accessible',
+              skip: 'Role management functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-42',
+            title: 'Organization Member Hierarchy Scope Enforcement',
+            story: 'As an Organization Member, I can only perform actions within my assigned hierarchy scope so that my access is properly limited to my organizational area',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '12 minutes',
+            prerequisites: 'Organization Member access, User assigned to specific hierarchy scope, Multiple hierarchy levels',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Navigate to Users page',
+              'Verify only users within assigned hierarchy scope are visible',
+              'Navigate to Business Entities page',
+              'Verify only entities within assigned hierarchy scope are visible',
+              'Navigate to User Groups page',
+              'Verify only groups within assigned hierarchy scope are visible',
+              'Attempt to access data outside assigned scope via direct URL',
+              'Verify access is denied',
+              'Attempt to access data outside assigned scope via API',
+              'Verify API returns 403 Forbidden'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'Only data within assigned hierarchy scope is visible',
+              'Data outside assigned scope is not accessible',
+              'Direct URL access to out-of-scope data returns 403 Forbidden',
+              'API calls to out-of-scope data return 403 Forbidden'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member can only access data within assigned hierarchy scope',
+              fail: 'Organization Member can access data outside assigned hierarchy scope',
+              blocked: 'Cannot test hierarchy scope enforcement or Organization Member access unavailable',
+              partial: 'Some hierarchy scope enforcement works but gaps exist',
+              skip: 'Hierarchy scope enforcement functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-43',
+            title: 'Organization Member API Access Control',
+            story: 'As an Organization Member, I can only perform read-only operations via API so that administrative actions are properly restricted',
+            category: 'organization-member-tests',
+            priority: 'High',
+            estimatedTime: '15 minutes',
+            prerequisites: 'Organization Member access, Valid API access token',
+            testSteps: JSON.stringify([
+              'Test GET /api/users endpoint',
+              'Verify 200 OK response with user data',
+              'Test POST /api/users endpoint',
+              'Verify 403 Forbidden response',
+              'Test PUT /api/users/{id} endpoint',
+              'Verify 403 Forbidden response',
+              'Test DELETE /api/users/{id} endpoint',
+              'Verify 403 Forbidden response',
+              'Test GET /api/groups endpoint',
+              'Verify 200 OK response with group data',
+              'Test POST /api/groups endpoint',
+              'Verify 403 Forbidden response',
+              'Test PUT /api/groups/{id} endpoint',
+              'Verify 403 Forbidden response',
+              'Test DELETE /api/groups/{id} endpoint',
+              'Verify 403 Forbidden response'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'GET requests return 200 OK with data',
+              'POST requests return 403 Forbidden',
+              'PUT requests return 403 Forbidden',
+              'DELETE requests return 403 Forbidden',
+              'All write operations are properly restricted'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member can only perform GET operations via API',
+              fail: 'Organization Member can perform unauthorized operations via API',
+              blocked: 'Cannot test API access control or Organization Member access unavailable',
+              partial: 'Some API endpoints are properly restricted but others allow unauthorized access',
+              skip: 'API access control functionality not implemented'
+            })
+          },
+          {
+            id: 'TC-44',
+            title: 'Organization Member Permission Denied Error Handling',
+            story: 'As an Organization Member, I receive appropriate error messages for denied actions so that I understand what I can and cannot do',
+            category: 'organization-member-tests',
+            priority: 'Medium',
+            estimatedTime: '10 minutes',
+            prerequisites: 'Organization Member access',
+            testSteps: JSON.stringify([
+              'Login as Organization Member',
+              'Attempt to create a new user',
+              'Verify appropriate error message is displayed',
+              'Attempt to edit an existing user',
+              'Verify appropriate error message is displayed',
+              'Attempt to delete a user',
+              'Verify appropriate error message is displayed',
+              'Attempt to create a new group',
+              'Verify appropriate error message is displayed',
+              'Attempt to access organization settings',
+              'Verify appropriate error message is displayed',
+              'Verify error messages are user-friendly and informative',
+              'Verify error messages suggest appropriate actions'
+            ]),
+            acceptanceCriteria: JSON.stringify([
+              'All unauthorized actions show appropriate error messages',
+              'Error messages are user-friendly and informative',
+              'Error messages suggest appropriate actions',
+              'Error messages are consistent across all denied actions'
+            ]),
+            statusGuidance: JSON.stringify({
+              pass: 'Organization Member receives appropriate error messages for denied actions',
+              fail: 'Organization Member receives inappropriate or no error messages for denied actions',
+              blocked: 'Cannot test error handling or Organization Member access unavailable',
+              partial: 'Some error messages are appropriate but others are not',
+              skip: 'Error handling functionality not implemented'
+            })
           }
         ];
         

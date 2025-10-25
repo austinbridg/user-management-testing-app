@@ -119,6 +119,11 @@ class APIClient {
         return response.nextId;
     }
 
+    async getTestResults() {
+        const response = await this.request('/test-results');
+        return response.testResults;
+    }
+
     async getTestResultsByTestId(testId) {
         const response = await this.request(`/tests/${testId}/results`);
         return response.testResults;

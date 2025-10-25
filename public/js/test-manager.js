@@ -16,7 +16,7 @@ class TestManager {
             'system-admin': 'System Administrator Tests',
             'org-admin': 'Organization Administrator Tests',
             'organization-manager-tests': 'Organization Manager Tests',
-            'org-member': 'Organization Member Tests',
+            'organization-member-tests': 'Organization Member Tests',
             'hr-admin': 'HR Administrator Tests',
             'end-user': 'End User Tests',
             'cross-role': 'Cross-Role Tests',
