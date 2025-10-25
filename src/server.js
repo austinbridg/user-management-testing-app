@@ -95,7 +95,7 @@ app.post('/api/login', (req, res) => {
     console.log('❌ Login failed: Invalid password');
     res.status(401).json({ 
       success: false, 
-      error: 'Invalid password' 
+      error: 'Incorrect password' 
     });
   }
 });
