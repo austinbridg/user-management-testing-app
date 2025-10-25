@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const db = new Database();
 
 // Configuration
-const APP_PASSWORD = process.env.APP_PASSWORD || 'GoodbyeVertex2025'; // Change this for production
+const APP_PASSWORD = process.env.APP_PASSWORD || 'CursifyVertex2025'; // Change this for production
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 // Middleware
@@ -27,7 +27,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    maxAge: 30 * 1000, // 30 seconds - very short session
+    maxAge: 5 * 60 * 1000, // 5 minutes - reasonable session length
     httpOnly: true
   }
 }));
@@ -1340,7 +1340,7 @@ const startServer = async () => {
             id: 'TC-22',
             title: 'Organization Manager Role Assignment',
             story: 'As a System Administrator, I can assign Organization Manager roles to users so that they can manage their organization effectively',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'High',
             estimatedTime: '12 minutes',
             prerequisites: 'System Administrator access, Test users available',
@@ -1370,7 +1370,7 @@ const startServer = async () => {
             id: 'TC-23',
             title: 'Organization Manager Group Management',
             story: 'As an Organization Manager, I can create and manage groups within my organization so that I can organize users effectively',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'High',
             estimatedTime: '15 minutes',
             prerequisites: 'Organization Manager access, Test organization available',
@@ -1400,7 +1400,7 @@ const startServer = async () => {
             id: 'TC-24',
             title: 'Organization Manager User Invitation',
             story: 'As an Organization Manager, I can invite users to my organization so that I can expand my team',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'Medium',
             estimatedTime: '10 minutes',
             prerequisites: 'Organization Manager access, Test email addresses available',
@@ -1431,7 +1431,7 @@ const startServer = async () => {
             id: 'TC-25',
             title: 'Organization Manager Permission Management',
             story: 'As an Organization Manager, I can manage permissions for users in my organization so that I can control access appropriately',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'Medium',
             estimatedTime: '12 minutes',
             prerequisites: 'Organization Manager access, Users with various roles available',
@@ -1461,7 +1461,7 @@ const startServer = async () => {
             id: 'TC-26',
             title: 'Organization Manager Reporting',
             story: 'As an Organization Manager, I can view reports about my organization so that I can monitor user activity and access',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'Low',
             estimatedTime: '8 minutes',
             prerequisites: 'Organization Manager access, User activity data available',
@@ -1491,7 +1491,7 @@ const startServer = async () => {
             id: 'TC-27',
             title: 'Organization Manager Audit Trail',
             story: 'As an Organization Manager, I can view audit trails for my organization so that I can track changes and maintain security',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'Medium',
             estimatedTime: '10 minutes',
             prerequisites: 'Organization Manager access, Audit trail data available',
@@ -1521,7 +1521,7 @@ const startServer = async () => {
             id: 'TC-28',
             title: 'Organization Manager Bulk Operations',
             story: 'As an Organization Manager, I can perform bulk operations on users so that I can manage large numbers of users efficiently',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'Medium',
             estimatedTime: '15 minutes',
             prerequisites: 'Organization Manager access, Multiple test users available',
@@ -1551,7 +1551,7 @@ const startServer = async () => {
             id: 'TC-29',
             title: 'Organization Manager Integration Testing',
             story: 'As an Organization Manager, I can verify that all integrations work correctly so that I can ensure system reliability',
-            category: 'org-manager',
+            category: 'organization-manager-tests',
             priority: 'Low',
             estimatedTime: '20 minutes',
             prerequisites: 'Organization Manager access, All integrations configured',

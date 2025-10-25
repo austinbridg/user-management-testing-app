@@ -1,7 +1,7 @@
 # Test Case Report
 
 **Generated:** 2025-10-25
-**Total Test Cases:** 21
+**Total Test Cases:** 35
 
 ## Executive Summary
 
@@ -12,6 +12,8 @@
 | Integration Tests | 2 | High: 2, Medium: 0, Low: 0 |
 | Performance Tests | 2 | High: 0, Medium: 2, Low: 0 |
 | End User Tests | 1 | High: 0, Medium: 1, Low: 0 |
+| organization-manager-tests | 8 | High: 2, Medium: 4, Low: 2 |
+| Organization Member Tests | 6 | High: 2, Medium: 2, Low: 2 |
 
 ## Organization Administrator Tests
 
@@ -781,6 +783,491 @@
 - **Blocked:** Cannot create user with no group memberships
 - **Partial:** No Access state shown but guidance incomplete
 - **Skip:** No Access state functionality not implemented
+
+
+---
+
+## organization-manager-tests
+
+**Test Count:** 8
+
+### TC-22: Organization Manager Role Assignment
+
+**Story:** As a System Administrator, I can assign Organization Manager roles to users so that they can manage their organization effectively
+
+**Priority:** High
+
+**Estimated Time:** 12 minutes
+
+**Prerequisites:** System Administrator access, Test users available
+
+**Test Steps:**
+1. Login as System Administrator
+2. Navigate to User Management
+3. Select a user to assign Organization Manager role
+4. Assign Organization Manager role
+5. Verify role assignment is successful
+6. Test Organization Manager permissions
+
+**Acceptance Criteria:**
+- Organization Manager role can be assigned successfully
+- User receives appropriate permissions
+- Role assignment is reflected in user profile
+- Organization Manager can access required features
+
+**Status Guidance:**
+- **Pass:** Organization Manager role assignment works correctly with proper permissions
+- **Fail:** Role assignment fails or permissions are incorrect
+- **Blocked:** Cannot access user management or System Administrator access unavailable
+- **Partial:** Role assigned but permissions not working correctly
+- **Skip:** Organization Manager role functionality not implemented
+
+
+---
+
+### TC-23: Organization Manager Group Management
+
+**Story:** As an Organization Manager, I can create and manage groups within my organization so that I can organize users effectively
+
+**Priority:** High
+
+**Estimated Time:** 15 minutes
+
+**Prerequisites:** Organization Manager access, Test organization available
+
+**Test Steps:**
+1. Login as Organization Manager
+2. Navigate to Groups section
+3. Create a new group
+4. Add users to the group
+5. Modify group settings
+6. Verify group management functionality
+
+**Acceptance Criteria:**
+- Can create new groups successfully
+- Can add/remove users from groups
+- Can modify group settings
+- Group changes are reflected immediately
+
+**Status Guidance:**
+- **Pass:** All group management functions work correctly
+- **Fail:** Group management functions fail or work incorrectly
+- **Blocked:** Cannot access Groups section or Organization Manager access unavailable
+- **Partial:** Some group management functions work but others fail
+- **Skip:** Group management functionality not implemented
+
+
+---
+
+### TC-24: Organization Manager User Invitation
+
+**Story:** As an Organization Manager, I can invite users to my organization so that I can expand my team
+
+**Priority:** Medium
+
+**Estimated Time:** 10 minutes
+
+**Prerequisites:** Organization Manager access, Test email addresses available
+
+**Test Steps:**
+1. Login as Organization Manager
+2. Navigate to Users page
+3. Click "Invite User" button
+4. Enter user email address
+5. Select appropriate group for user
+6. Send invitation
+7. Verify invitation is sent successfully
+
+**Acceptance Criteria:**
+- Can send user invitations successfully
+- Invitation email is sent to user
+- User appears in pending invitations list
+- Can assign users to groups during invitation
+
+**Status Guidance:**
+- **Pass:** User invitation process works correctly
+- **Fail:** User invitation process fails
+- **Blocked:** Cannot access Users page or Organization Manager access unavailable
+- **Partial:** Invitation sent but some features not working
+- **Skip:** User invitation functionality not implemented
+
+
+---
+
+### TC-25: Organization Manager Permission Management
+
+**Story:** As an Organization Manager, I can manage permissions for users in my organization so that I can control access appropriately
+
+**Priority:** Medium
+
+**Estimated Time:** 12 minutes
+
+**Prerequisites:** Organization Manager access, Users with various roles available
+
+**Test Steps:**
+1. Login as Organization Manager
+2. Navigate to User Management
+3. Select a user to modify permissions
+4. Modify user permissions
+5. Save changes
+6. Verify permission changes are applied
+
+**Acceptance Criteria:**
+- Can modify user permissions successfully
+- Permission changes are saved correctly
+- Users experience updated permissions immediately
+- Permission management interface is intuitive
+
+**Status Guidance:**
+- **Pass:** Permission management works correctly
+- **Fail:** Permission management fails or changes not applied
+- **Blocked:** Cannot access permission management or Organization Manager access unavailable
+- **Partial:** Some permission changes work but others fail
+- **Skip:** Permission management functionality not implemented
+
+
+---
+
+### TC-26: Organization Manager Reporting
+
+**Story:** As an Organization Manager, I can view reports about my organization so that I can monitor user activity and access
+
+**Priority:** Low
+
+**Estimated Time:** 8 minutes
+
+**Prerequisites:** Organization Manager access, User activity data available
+
+**Test Steps:**
+1. Login as Organization Manager
+2. Navigate to Reports section
+3. View organization user report
+4. View access activity report
+5. Export report data
+6. Verify report accuracy
+
+**Acceptance Criteria:**
+- Can view organization reports successfully
+- Report data is accurate and up-to-date
+- Can export reports in various formats
+- Reports provide meaningful insights
+
+**Status Guidance:**
+- **Pass:** Reporting functionality works correctly with accurate data
+- **Fail:** Reports fail to load or contain inaccurate data
+- **Blocked:** Cannot access Reports section or Organization Manager access unavailable
+- **Partial:** Reports load but some features not working
+- **Skip:** Reporting functionality not implemented
+
+
+---
+
+### TC-27: Organization Manager Audit Trail
+
+**Story:** As an Organization Manager, I can view audit trails for my organization so that I can track changes and maintain security
+
+**Priority:** Medium
+
+**Estimated Time:** 10 minutes
+
+**Prerequisites:** Organization Manager access, Audit trail data available
+
+**Test Steps:**
+1. Login as Organization Manager
+2. Navigate to Audit Trail section
+3. View recent organization changes
+4. Filter audit trail by date range
+5. View detailed change information
+6. Export audit trail data
+
+**Acceptance Criteria:**
+- Can view audit trail successfully
+- Audit trail shows all relevant changes
+- Can filter and search audit data
+- Audit trail data is accurate and complete
+
+**Status Guidance:**
+- **Pass:** Audit trail functionality works correctly with complete data
+- **Fail:** Audit trail fails to load or missing data
+- **Blocked:** Cannot access Audit Trail section or Organization Manager access unavailable
+- **Partial:** Audit trail loads but some features not working
+- **Skip:** Audit trail functionality not implemented
+
+
+---
+
+### TC-28: Organization Manager Bulk Operations
+
+**Story:** As an Organization Manager, I can perform bulk operations on users so that I can manage large numbers of users efficiently
+
+**Priority:** Medium
+
+**Estimated Time:** 15 minutes
+
+**Prerequisites:** Organization Manager access, Multiple test users available
+
+**Test Steps:**
+1. Login as Organization Manager
+2. Navigate to User Management
+3. Select multiple users
+4. Perform bulk role assignment
+5. Perform bulk group assignment
+6. Verify bulk operations completed successfully
+
+**Acceptance Criteria:**
+- Can select multiple users successfully
+- Bulk operations complete without errors
+- All selected users are updated correctly
+- Bulk operation results are clearly displayed
+
+**Status Guidance:**
+- **Pass:** Bulk operations work correctly for all selected users
+- **Fail:** Bulk operations fail or only partially complete
+- **Blocked:** Cannot access bulk operations or Organization Manager access unavailable
+- **Partial:** Some bulk operations work but others fail
+- **Skip:** Bulk operations functionality not implemented
+
+
+---
+
+### TC-29: Organization Manager Integration Testing
+
+**Story:** As an Organization Manager, I can verify that all integrations work correctly so that I can ensure system reliability
+
+**Priority:** Low
+
+**Estimated Time:** 20 minutes
+
+**Prerequisites:** Organization Manager access, All integrations configured
+
+**Test Steps:**
+1. Login as Organization Manager
+2. Test email integration
+3. Test SSO integration
+4. Test API integrations
+5. Verify data synchronization
+6. Test error handling
+
+**Acceptance Criteria:**
+- All integrations work correctly
+- Data synchronization is accurate
+- Error handling is appropriate
+- Integration performance is acceptable
+
+**Status Guidance:**
+- **Pass:** All integrations work correctly with proper error handling
+- **Fail:** One or more integrations fail or work incorrectly
+- **Blocked:** Cannot access integration features or Organization Manager access unavailable
+- **Partial:** Most integrations work but some have issues
+- **Skip:** Integration testing functionality not implemented
+
+
+---
+
+## Organization Member Tests
+
+**Test Count:** 6
+
+### TC-30: Organization Member Profile Management
+
+**Story:** As an Organization Member, I can manage my profile information so that my account details are accurate and up-to-date
+
+**Priority:** Medium
+
+**Estimated Time:** 8 minutes
+
+**Prerequisites:** Organization Member access, Profile management available
+
+**Test Steps:**
+1. Login as Organization Member
+2. Navigate to Profile section
+3. Update personal information
+4. Change password
+5. Update notification preferences
+6. Save changes and verify updates
+
+**Acceptance Criteria:**
+- Can update profile information successfully
+- Password change works correctly
+- Notification preferences are saved
+- Profile changes are reflected immediately
+
+**Status Guidance:**
+- **Pass:** Profile management works correctly with all features
+- **Fail:** Profile management fails or some features not working
+- **Blocked:** Cannot access Profile section or Organization Member access unavailable
+- **Partial:** Some profile features work but others fail
+- **Skip:** Profile management functionality not implemented
+
+
+---
+
+### TC-31: Organization Member Group Access
+
+**Story:** As an Organization Member, I can view and request access to groups so that I can collaborate with appropriate teams
+
+**Priority:** High
+
+**Estimated Time:** 10 minutes
+
+**Prerequisites:** Organization Member access, Groups available in organization
+
+**Test Steps:**
+1. Login as Organization Member
+2. Navigate to Groups section
+3. View available groups
+4. Request access to a group
+5. View current group memberships
+6. Verify group access requests
+
+**Acceptance Criteria:**
+- Can view available groups successfully
+- Can request access to groups
+- Group access requests are submitted correctly
+- Current group memberships are displayed accurately
+
+**Status Guidance:**
+- **Pass:** Group access functionality works correctly
+- **Fail:** Group access functionality fails or requests not submitted
+- **Blocked:** Cannot access Groups section or Organization Member access unavailable
+- **Partial:** Some group features work but others fail
+- **Skip:** Group access functionality not implemented
+
+
+---
+
+### TC-32: Organization Member Resource Access
+
+**Story:** As an Organization Member, I can access resources based on my group memberships so that I can perform my job effectively
+
+**Priority:** High
+
+**Estimated Time:** 12 minutes
+
+**Prerequisites:** Organization Member access, Resources with group-based permissions available
+
+**Test Steps:**
+1. Login as Organization Member
+2. Navigate to Resources section
+3. View accessible resources
+4. Attempt to access restricted resources
+5. Verify access permissions are enforced
+6. Test resource functionality
+
+**Acceptance Criteria:**
+- Can access permitted resources successfully
+- Cannot access restricted resources
+- Resource permissions are enforced correctly
+- Resource functionality works as expected
+
+**Status Guidance:**
+- **Pass:** Resource access and permissions work correctly
+- **Fail:** Resource access fails or permissions not enforced
+- **Blocked:** Cannot access Resources section or Organization Member access unavailable
+- **Partial:** Some resources accessible but permissions not working correctly
+- **Skip:** Resource access functionality not implemented
+
+
+---
+
+### TC-33: Organization Member Collaboration
+
+**Story:** As an Organization Member, I can collaborate with other members in my groups so that I can work effectively with my team
+
+**Priority:** Medium
+
+**Estimated Time:** 15 minutes
+
+**Prerequisites:** Organization Member access, Other members in same groups available
+
+**Test Steps:**
+1. Login as Organization Member
+2. Navigate to Collaboration section
+3. View team members in groups
+4. Send messages to team members
+5. Share resources with team
+6. Participate in group discussions
+
+**Acceptance Criteria:**
+- Can view team members successfully
+- Can send messages to team members
+- Can share resources with team
+- Can participate in group discussions
+
+**Status Guidance:**
+- **Pass:** All collaboration features work correctly
+- **Fail:** Collaboration features fail or not working properly
+- **Blocked:** Cannot access Collaboration section or Organization Member access unavailable
+- **Partial:** Some collaboration features work but others fail
+- **Skip:** Collaboration functionality not implemented
+
+
+---
+
+### TC-34: Organization Member Notification Management
+
+**Story:** As an Organization Member, I can manage my notification preferences so that I receive relevant updates without being overwhelmed
+
+**Priority:** Low
+
+**Estimated Time:** 6 minutes
+
+**Prerequisites:** Organization Member access, Notification system available
+
+**Test Steps:**
+1. Login as Organization Member
+2. Navigate to Notification Settings
+3. Configure notification preferences
+4. Test different notification types
+5. Save preferences
+6. Verify notification settings are applied
+
+**Acceptance Criteria:**
+- Can configure notification preferences successfully
+- Notification settings are saved correctly
+- Notifications are received according to preferences
+- Notification management interface is intuitive
+
+**Status Guidance:**
+- **Pass:** Notification management works correctly with proper settings
+- **Fail:** Notification management fails or settings not applied
+- **Blocked:** Cannot access Notification Settings or Organization Member access unavailable
+- **Partial:** Some notification features work but others fail
+- **Skip:** Notification management functionality not implemented
+
+
+---
+
+### TC-35: Organization Member Mobile Access
+
+**Story:** As an Organization Member, I can access the platform from mobile devices so that I can work effectively from anywhere
+
+**Priority:** Low
+
+**Estimated Time:** 15 minutes
+
+**Prerequisites:** Organization Member access, Mobile device available
+
+**Test Steps:**
+1. Access platform from mobile device
+2. Login as Organization Member
+3. Navigate through mobile interface
+4. Test core functionality on mobile
+5. Verify responsive design works
+6. Test mobile-specific features
+
+**Acceptance Criteria:**
+- Platform is accessible from mobile devices
+- Mobile interface is responsive and functional
+- Core features work on mobile
+- Mobile experience is user-friendly
+
+**Status Guidance:**
+- **Pass:** Mobile access works correctly with good user experience
+- **Fail:** Mobile access fails or poor user experience
+- **Blocked:** Cannot access platform from mobile or Organization Member access unavailable
+- **Partial:** Some mobile features work but others have issues
+- **Skip:** Mobile access functionality not implemented
 
 
 ---

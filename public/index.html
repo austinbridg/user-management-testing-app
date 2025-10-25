@@ -442,16 +442,6 @@
             // Use sendBeacon for reliable logout on page unload
             navigator.sendBeacon('/api/logout');
         });
-        
-        // Also handle page visibility change (tab switching)
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                // Page is hidden, logout
-                fetch('/api/logout', { method: 'POST' }).catch(() => {
-                    // Ignore errors during logout
-                });
-            }
-        });
     </script>
 </body>
 </html>

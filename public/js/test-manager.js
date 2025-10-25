@@ -15,6 +15,7 @@ class TestManager {
         this.categoryNames = {
             'system-admin': 'System Administrator Tests',
             'org-admin': 'Organization Administrator Tests',
+            'organization-manager-tests': 'Organization Manager Tests',
             'org-member': 'Organization Member Tests',
             'hr-admin': 'HR Administrator Tests',
             'end-user': 'End User Tests',
