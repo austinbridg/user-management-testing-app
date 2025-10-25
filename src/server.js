@@ -53,7 +53,7 @@ app.get('/', (req, res) => {
 // Serve main app only when authenticated (special route)
 app.get('/app', (req, res) => {
   if (req.session.authenticated) {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
   } else {
     res.redirect('/login');
   }
@@ -61,7 +61,7 @@ app.get('/app', (req, res) => {
 
 // Authentication Routes
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  res.sendFile(path.join(__dirname, '../public', 'login.html'));
 });
 
 app.post('/api/login', (req, res) => {
@@ -108,7 +108,7 @@ app.post('/api/logout', (req, res) => {
 app.use('/api', requireAuth);
 
 // Serve static files (CSS, JS, etc.) - but not HTML files
-app.use(express.static('public', {
+app.use(express.static(path.join(__dirname, '../public'), {
   index: false // Don't serve index.html automatically
 }));
 
