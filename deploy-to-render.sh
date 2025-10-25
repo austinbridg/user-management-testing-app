@@ -1,87 +1,77 @@
 #!/bin/bash
 
-# Test Tracker Render Deployment Helper
-# This script helps you prepare and deploy to Render
-
-echo "🚀 Test Tracker Render Deployment Helper"
-echo "========================================"
-echo ""
+# Deploy to Render - Test Tracker App
+echo "🚀 Preparing for Render deployment..."
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then
-    echo "❌ package.json not found. Please run this script from the project root."
+    echo "❌ Error: package.json not found. Please run this script from the project root."
     exit 1
 fi
 
+# Check if render.yaml exists
 if [ ! -f "render.yaml" ]; then
-    echo "❌ render.yaml not found. Please ensure this is the Render-optimized version."
+    echo "❌ Error: render.yaml not found. Please ensure the Render configuration file exists."
     exit 1
 fi
 
-echo "✅ Project files found"
-echo ""
-
-# Check if git is initialized
-if [ ! -d ".git" ]; then
-    echo "📦 Initializing Git repository..."
-    git init
-    git add .
-    git commit -m "Initial commit for Render deployment"
-    echo "✅ Git repository initialized"
-    echo ""
+# Check if server.js exists
+if [ ! -f "server.js" ]; then
+    echo "❌ Error: server.js not found. Please ensure the main server file exists."
+    exit 1
 fi
 
-# Check if there are uncommitted changes
-if [ -n "$(git status --porcelain)" ]; then
-    echo "📝 Committing changes..."
-    git add .
-    git commit -m "Update for Render deployment"
-    echo "✅ Changes committed"
-    echo ""
+# Check if public directory exists
+if [ ! -d "public" ]; then
+    echo "❌ Error: public directory not found. Please ensure the frontend files are in the public directory."
+    exit 1
 fi
 
-# Check if remote origin is set
-if ! git remote get-url origin > /dev/null 2>&1; then
-    echo "🔗 Please set up your GitHub repository:"
-    echo "   git remote add origin https://github.com/your-username/your-repo.git"
-    echo "   git push -u origin main"
-    echo ""
-    echo "Then deploy on Render:"
-    echo "   1. Go to https://render.com"
-    echo "   2. Create new Web Service"
-    echo "   3. Connect your GitHub repository"
-    echo "   4. Deploy!"
-    echo ""
+echo "✅ All required files found!"
+
+# Check Node.js version
+echo "📋 Checking Node.js version..."
+node_version=$(node --version)
+echo "Node.js version: $node_version"
+
+# Check if dependencies are installed
+if [ ! -d "node_modules" ]; then
+    echo "📦 Installing dependencies..."
+    npm install
 else
-    echo "🌐 Pushing to GitHub..."
-    git push origin main
-    echo "✅ Code pushed to GitHub"
-    echo ""
-    echo "🎯 Next steps:"
-    echo "   1. Go to https://render.com"
-    echo "   2. Create new Web Service"
-    echo "   3. Connect your GitHub repository"
-    echo "   4. Deploy!"
-    echo ""
+    echo "✅ Dependencies already installed"
 fi
 
-echo "📋 Deployment Checklist:"
-echo "✅ Project files ready"
-echo "✅ Git repository initialized"
-echo "✅ Changes committed"
-if git remote get-url origin > /dev/null 2>&1; then
-    echo "✅ Code pushed to GitHub"
+# Test the server locally (optional)
+echo "🧪 Testing server startup..."
+node server.js &
+server_pid=$!
+sleep 3
+
+if kill -0 $server_pid 2>/dev/null; then
+    echo "✅ Server starts successfully"
+    kill $server_pid
 else
-    echo "⚠️  Set up GitHub remote repository"
+    echo "❌ Server failed to start. Please check for errors."
+    exit 1
 fi
-echo ""
 
-echo "🔧 Render Configuration:"
-echo "   - Build Command: npm install"
-echo "   - Start Command: npm start"
-echo "   - Health Check: /api/health"
-echo "   - Environment: NODE_ENV=production"
 echo ""
-
-echo "📖 For detailed instructions, see RENDER.md"
 echo "🎉 Ready for Render deployment!"
+echo ""
+echo "📋 Deployment checklist:"
+echo "  ✅ package.json configured"
+echo "  ✅ render.yaml configured"
+echo "  ✅ server.js exists"
+echo "  ✅ public/ directory exists"
+echo "  ✅ Dependencies installed"
+echo "  ✅ Server starts successfully"
+echo ""
+echo "🔗 Next steps:"
+echo "  1. Push your code to GitHub"
+echo "  2. Connect your GitHub repo to Render"
+echo "  3. Render will automatically detect the render.yaml configuration"
+echo "  4. The app will be deployed with password: GoodbyeVertex2025"
+echo ""
+echo "🌐 Your app will be available at: https://your-app-name.onrender.com"
+echo "🔐 Login with password: GoodbyeVertex2025"

@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const db = new Database();
 
 // Configuration
-const APP_PASSWORD = process.env.APP_PASSWORD || 'CursifyVertex2025'; // Change this for production
+const APP_PASSWORD = process.env.APP_PASSWORD || 'GoodbyeVertex2025'; // Change this for production
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 // Middleware
