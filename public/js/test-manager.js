@@ -518,20 +518,24 @@ class TestManager {
             const newResult = {
                 userId: user.id, // Send user ID instead of name
                 status: status,
-                date: document.getElementById('testDate').value,
+                testDate: document.getElementById('testDate').value,
                 notes: document.getElementById('testNotes').value,
-                environment: document.getElementById('environment').value,
-                bugReport: null
+                environment: document.getElementById('environment').value
             };
             
             if (status === 'fail') {
-                newResult.bugReport = {
-                    severity: document.getElementById('bugSeverity').value,
-                    description: document.getElementById('bugDescription').value,
-                    stepsToReproduce: document.getElementById('stepsToReproduce').value,
-                    expectedResult: document.getElementById('expectedResult').value,
-                    actualResult: document.getElementById('actualResult').value
-                };
+                newResult.bugSeverity = document.getElementById('bugSeverity').value;
+                newResult.bugDescription = document.getElementById('bugDescription').value;
+                newResult.stepsToReproduce = document.getElementById('stepsToReproduce').value;
+                newResult.expectedResult = document.getElementById('expectedResult').value;
+                newResult.actualResult = document.getElementById('actualResult').value;
+            } else {
+                // Ensure bug fields are null for non-fail statuses
+                newResult.bugSeverity = null;
+                newResult.bugDescription = null;
+                newResult.stepsToReproduce = null;
+                newResult.expectedResult = null;
+                newResult.actualResult = null;
             }
             
             console.log('💾 Saving test result:', {
@@ -547,10 +551,21 @@ class TestManager {
                 // Update existing result
                 await this.api.updateTestResult(this.currentEditingResultId, newResult);
                 
-                // Update local data
+                // Update local data, transform back to frontend format
                 const existingResultIndex = test.userResults.findIndex(result => result.id === this.currentEditingResultId);
                 if (existingResultIndex >= 0) {
-                    test.userResults[existingResultIndex] = { ...newResult, id: this.currentEditingResultId };
+                    test.userResults[existingResultIndex] = { 
+                        ...newResult, 
+                        id: this.currentEditingResultId,
+                        date: newResult.testDate, // Use 'date' for frontend display
+                        bugReport: status === 'fail' && newResult.bugSeverity ? {
+                            severity: newResult.bugSeverity,
+                            description: newResult.bugDescription,
+                            stepsToReproduce: newResult.stepsToReproduce,
+                            expectedResult: newResult.expectedResult,
+                            actualResult: newResult.actualResult
+                        } : null
+                    };
                 }
                 
                 // Clear editing state
@@ -559,8 +574,19 @@ class TestManager {
                 // Create new result
                 const createdResult = await this.api.createTestResult(test.id, newResult);
                 
-                // Add to local data with the ID from the server
-                test.userResults.push({ ...newResult, id: createdResult.id });
+                // Add to local data with the ID from the server, transform back to frontend format
+                test.userResults.push({ 
+                    ...newResult, 
+                    id: createdResult.id,
+                    date: newResult.testDate, // Use 'date' for frontend display
+                    bugReport: status === 'fail' && newResult.bugSeverity ? {
+                        severity: newResult.bugSeverity,
+                        description: newResult.bugDescription,
+                        stepsToReproduce: newResult.stepsToReproduce,
+                        expectedResult: newResult.expectedResult,
+                        actualResult: newResult.actualResult
+                    } : null
+                });
             }
             
             // Recalculate consolidated status
